@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Text?>
+
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="516.0" prefWidth="713.0" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <ScrollPane layoutX="66.0" layoutY="46.0" prefHeight="131.0" prefWidth="582.0" />
+      <Text layoutX="66.0" layoutY="36.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nächste Termine" />
+      <Button layoutX="520.0" layoutY="465.0" mnemonicParsing="false" text="Neue Besprechung" />
+      <Text layoutX="66.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Veranstalter:" />
+      <Text layoutX="140.0" layoutY="214.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Peter" />
+      <Text layoutX="66.0" layoutY="247.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Thema:" />
+      <Text layoutX="154.0" layoutY="247.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Wie mache ich das Design?" />
+      <ScrollPane layoutX="409.0" layoutY="218.0" prefHeight="233.0" prefWidth="241.0" />
+      <Text layoutX="409.0" layoutY="206.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Teilnehmer:" />
+      <Text layoutX="66.0" layoutY="281.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Zeitpunkt:" />
+      <Text layoutX="154.0" layoutY="281.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Heute 13:30" />
+      <Text layoutX="66.0" layoutY="308.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Gebäude:" />
+      <Text layoutX="154.0" layoutY="308.0" strokeType="OUTSIDE" strokeWidth="0.0" text="A2" />
+      <Text layoutX="66.0" layoutY="339.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Stockwerk:" />
+      <Text layoutX="155.0" layoutY="339.0" strokeType="OUTSIDE" strokeWidth="0.0" text="2" />
+      <Text layoutX="66.0" layoutY="367.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Raum Nummer:" />
+      <Text layoutX="158.0" layoutY="367.0" strokeType="OUTSIDE" strokeWidth="0.0" text="234" />
+      <Text layoutX="67.0" layoutY="395.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Whiteboard:" />
+      <Text layoutX="159.0" layoutY="395.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Ja" />
+      <Text layoutX="67.0" layoutY="419.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Barrierefrei:" />
+      <Text layoutX="159.0" layoutY="419.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Nein" />
+      <Text layoutX="67.0" layoutY="447.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Klimaanlage:" />
+      <Text layoutX="159.0" layoutY="447.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Burn baby, burn!" />
+      <Button layoutX="65.0" layoutY="465.0" mnemonicParsing="false" text="Bearbeiten" />
+   </children>
+</AnchorPane>

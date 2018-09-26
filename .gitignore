@@ -11,6 +11,7 @@
 .idea/
 *.iml
 *.iws
+*.MF
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/

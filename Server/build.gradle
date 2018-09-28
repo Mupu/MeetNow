@@ -1,0 +1,57 @@
+plugins {
+    id 'java'
+    id 'nu.studer.jooq' version '3.0.2'
+    id 'application'
+}
+
+group 'me.mupu'
+version '1.0-SNAPSHOT'
+sourceCompatibility = 1.8
+
+//run the properties.gradle script
+apply from: 'properties.gradle'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+    jooqRuntime 'mysql:mysql-connector-java:8.0.12'
+    implementation 'org.jooq:jooq:3.11.5'
+    implementation 'org.jooq:jooq-meta:3.11.5'
+    implementation 'org.jooq:jooq-codegen:3.11.5'
+    implementation 'mysql:mysql-connector-java:8.0.12'
+}
+
+jooq {
+    version = '3.11.5'
+    sample(sourceSets.main) {
+        jdbc {
+            user = puser
+            password = ppassword
+            url = purl
+            driver = pdriver
+        }
+        generator {
+            database {
+                name = 'org.jooq.meta.mysql.MySQLDatabase'
+                inputSchema = pdatabaseName
+            }
+            target {
+                packageName = 'jooq'
+            }
+        }
+    }
+}
+
+task runMain(type: JavaExec) {
+    classpath sourceSets.main.runtimeClasspath
+    main = "me.mupu.Main"
+    //   add system properties so the java programm can get this data
+    System.setProperty("user", "$puser")
+    System.setProperty("password", "$ppassword")
+    System.setProperty("url", "$purl")
+    System.setProperty("driver", "$pdriver")
+    systemProperties(System.getProperties().subMap(["user","password","url","driver"]))
+}

@@ -5,7 +5,7 @@ plugins {
 }
 
 group 'me.mupu'
-version '1.0-SNAPSHOT'
+version 'Server-1.0-SNAPSHOT'
 sourceCompatibility = 1.8
 
 //run the properties.gradle script

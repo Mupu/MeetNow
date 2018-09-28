@@ -47,7 +47,7 @@ jooq {
 
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
-    main = "me.mupu.Main"
+    main = "me.mupu.ServerMain"
     //   add system properties so the java programm can get this data
     System.setProperty("user", "$puser")
     System.setProperty("password", "$ppassword")

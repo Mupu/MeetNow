@@ -1,3 +1,5 @@
+
+DROP DATABASE meetnow;
 CREATE DATABASE IF NOT EXISTS meetnow;
 
 USE meetnow;

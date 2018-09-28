@@ -6,7 +6,7 @@ plugins {
 group 'me.mupu'
 version 'Client-1.0-SNAPSHOT'
 sourceCompatibility = 1.8
-mainClassName = "me.mupu.Main"
+mainClassName = "me.mupu.ClientMain"
 
 repositories {
     mavenLocal()

@@ -31,7 +31,7 @@ insert into benutzer (personId, benutzername, `passwort`, accountstatus, rechte)
 
 insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (1, 1, "test1", "2018-10-29 13:10:00.000", "2018-10-29 14:10:00.000");
 insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (2, 9, "test2", "2018-10-29 13:10:00.000", "2018-10-29 14:10:00.000");
-insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (1, 6, "test3", "2018-10-29 15:10:00.000", "2018-10-29 15:10:00.000");
+insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (1, 6, "test3", "2018-10-29 15:10:00.000", "2018-10-29 16:10:00.000");
 
 insert into ausleihe values (1, 1);
 insert into ausleihe values (1, 3);

@@ -1,100 +1,50 @@
 package me.mupu;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.security.cert.Certificate;
-import java.io.*;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.CookieStore;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.config.CookieSpecs;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.*;
+import org.apache.http.ssl.SSLContextBuilder;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLContext;
 
-public class ServerMainTest{
 
-    static {
-        //for localhost testing only
-        HttpsURLConnection.setDefaultHostnameVerifier((hostname, sslSession) -> hostname.equals("localhost"));
-    }
+public class ServerMainTest {
 
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         new ServerMainTest().testIt();
     }
 
-    private void testIt(){
-
-        String https_url = "https://localhost:443/";
-        URL url;
+    private void testIt() {
+        String https_url = "https://localhost:443/hallo?pete=ja%20&%20olo=4";
         try {
+            // disable certificate check
+            SSLContext sslContext = new SSLContextBuilder()
+                    .loadTrustMaterial(null, (certificate, authType) -> true).build();
 
-            url = new URL(https_url);
-            HttpsURLConnection con = (HttpsURLConnection)url.openConnection();
+            // setup client
+            CookieStore httpCookieStore = new BasicCookieStore();
+            CloseableHttpClient client = HttpClients.custom()
+                    .setSSLContext(sslContext)
+                    .setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build())
+                    .setDefaultCookieStore(httpCookieStore)
+                    .build();
 
-            //dumpl all cert info
-            print_https_cert(con);
+            // setup get request
+            HttpGet httpGet = new HttpGet(https_url);
+            httpGet.addHeader("Content-Type", "text/plain");
 
-            //dump all the content
-            print_content(con);
+            // setup reponse handler
+            ResponseHandler<String> responseHandler = new BasicResponseHandler();
+            HttpResponse response = client.execute(httpGet);
 
-        } catch (MalformedURLException e) {
+            System.out.println(responseHandler.handleResponse(response));
+
+        } catch (Exception e) {
             e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    private void print_https_cert(HttpsURLConnection con){
-
-        if(con!=null){
-
-            try {
-
-                System.out.println("Response Code : " + con.getResponseCode());
-                System.out.println("Cipher Suite : " + con.getCipherSuite());
-                System.out.println("\n");
-
-                Certificate[] certs = con.getServerCertificates();
-                for(Certificate cert : certs){
-                    System.out.println("Cert Type : " + cert.getType());
-                    System.out.println("Cert Hash Code : " + cert.hashCode());
-                    System.out.println("Cert Public Key Algorithm : "
-                            + cert.getPublicKey().getAlgorithm());
-                    System.out.println("Cert Public Key Format : "
-                            + cert.getPublicKey().getFormat());
-                    System.out.println("\n");
-                }
-
-            } catch (SSLPeerUnverifiedException e) {
-                e.printStackTrace();
-            } catch (IOException e){
-                e.printStackTrace();
-            }
-
-        }
-
-    }
-
-    private void print_content(HttpsURLConnection con){
-        if(con!=null){
-
-            try {
-
-                System.out.println("****** Content of the URL ********");
-                BufferedReader br =
-                        new BufferedReader(
-                                new InputStreamReader(con.getInputStream()));
-
-                String input;
-
-                while ((input = br.readLine()) != null){
-                    System.out.println(input);
-                }
-                br.close();
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         }
 
     }

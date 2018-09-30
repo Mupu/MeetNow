@@ -4,6 +4,7 @@ import org.jooq.*;
 import org.jooq.exception.NoDataFoundException;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 
@@ -19,11 +20,14 @@ public class SQLQuerries {
     }
 
     private SQLQuerries() {
+        // disable logo output of jooq
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+
         try {
-        Class.forName(System.getProperty("driver")).newInstance();
-        Connection connection = DriverManager.getConnection(System.getProperty("url"), System.getProperty("user"), System.getProperty("password"));
-        dslContext = DSL.using(connection, SQLDialect.MYSQL);
-        } catch (Exception e){
+            Class.forName(System.getProperty("driver")).newInstance();
+            Connection connection = DriverManager.getConnection(System.getProperty("url"), System.getProperty("user"), System.getProperty("password"));
+            dslContext = DSL.using(connection, SQLDialect.MYSQL);
+        } catch (Exception e) {
             System.err.println("Connection could not be established");
             System.exit(1);
         }

@@ -94,7 +94,7 @@ public class SQLQuery {
     }
 
     // DEBUG ONLY TODO remove this for deploy
-    public Result<Record> doCustomQuery(String s) throws Exception {
+    public Result<Record> doCustomQuery(String s) {
         Result<Record> result = null;
         try {
             result = dslContext.resultQuery(s).fetch();
@@ -102,6 +102,11 @@ public class SQLQuery {
             e.printStackTrace();
         }
         return result;
+    }
+
+    // DEBUG ONLY TODO remove this for deploy
+    public DSLContext getContext(){
+        return dslContext;
     }
 
 }

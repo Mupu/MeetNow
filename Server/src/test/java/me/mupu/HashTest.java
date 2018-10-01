@@ -2,31 +2,45 @@ package me.mupu;
 
 import me.mupu.sql.SQLQuery;
 import org.jooq.Record;
+import org.jooq.Record2;
 import org.jooq.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static jooq.Tables.*;
+
+/**
+ * Based on meetnowTestdata.sql script
+ */
 class HashTest {
 
     @Test
-    void checkHashIsWorking() throws Exception{
+    void checkHashIsWorking() throws Exception {
         String pw = "testpassword";
+        System.out.println(pw);
         String hashedPw = Hash.generatePasswordHash(pw);
+        System.out.println(hashedPw);
         Assertions.assertEquals(true, Hash.validatePassword(pw, hashedPw));
     }
 
     @Test
-    void hashTestDatabase() throws Exception{
-            String originalPassword;
-            Result<Record> data = SQLQuery.getInstance().doCustomQuery("select Nachname as orPassword, passwort from Person, benutzer where benutzer.personid = person.personid");
+    void hashTestDatabase() throws Exception {
+        String originalPassword;
 
-            System.out.println(data);
-            for (Record r :
-                    data) {
-                originalPassword = (String) r.get(0);
-                boolean isCorrect = Hash.validatePassword(originalPassword, (String) r.get(1));
-                Assertions.assertEquals(true, isCorrect);
-            }
+        Result<Record2<String, String>> data = SQLQuery.getInstance().getContext()
+                .select(PERSON.NACHNAME.as("orPassword"), BENUTZER.PASSWORT)
+                .from(PERSON, BENUTZER)
+                .where(BENUTZER.PERSONID.eq(PERSON.PERSONID))
+                .fetch();
+
+        System.out.println(data);
+        for (Record r :
+                data) {
+            originalPassword = r.get(PERSON.NACHNAME.as("orPassword"));
+            boolean isCorrect = Hash.validatePassword(originalPassword, r.get(BENUTZER.PASSWORT));
+            System.out.println(originalPassword + ": " + isCorrect);
+            Assertions.assertTrue(isCorrect);
+        }
     }
 
 

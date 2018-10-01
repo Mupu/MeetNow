@@ -12,13 +12,13 @@ import java.security.KeyStore;
 public class ServerMain extends NanoHTTPD {
 
     public static void main(String[] args) {
-        new ServerMain();
+        new ServerMain(443);
         //todo remove this
         SQLQuery.getInstance();
     }
 
-    private ServerMain() {
-        super(443);
+    public ServerMain(int port) {
+        super(port);
         try {
             // load keystore
             File f = new File("src/main/resources/keystore.jks");

@@ -1,9 +1,5 @@
 package me.mupu;
 
-import me.mupu.sql.SQLQuery;
-import org.jooq.Record;
-import org.jooq.Result;
-
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.math.BigInteger;
@@ -18,7 +14,7 @@ public class Hash {
         char[] chars = password.toCharArray();
         byte[] salt = getSalt();
 
-        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 8);
+        PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 32);
         SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
         byte[] hash = skf.generateSecret(spec).getEncoded();
         return iterations + ":" + toHex(salt) + ":" + toHex(hash);

@@ -8,19 +8,24 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.*;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import javax.net.ssl.SSLContext;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+class ServerMainTest {
 
-public class ServerMainTest {
-
-    public static void main(String[] args) {
-        new ServerMainTest().testIt();
+    @BeforeAll
+    void startServer() {
+        new ServerMain(7327);
     }
 
-    private void testIt() {
-        String https_url = "https://localhost:443/hallo?pete=ja%20&%20olo=4";
-        try {
+    @Test
+    void testConnectionAndGetReqeuest() throws Exception{
+        String https_url = "https://localhost:7327/hallo?pete=ja%20&%20olo=4";
+
             // disable certificate check
             SSLContext sslContext = new SSLContextBuilder()
                     .loadTrustMaterial(null, (certificate, authType) -> true).build();
@@ -42,11 +47,6 @@ public class ServerMainTest {
             HttpResponse response = client.execute(httpGet);
 
             System.out.println(responseHandler.handleResponse(response));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
     }
 
 }

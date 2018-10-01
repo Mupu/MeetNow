@@ -10,16 +10,16 @@ import java.sql.DriverManager;
 
 import static jooq.Tables.*;
 
-public class SQLQuerries {
+public class SQLQuery {
 
-    private static SQLQuerries instance = null;
+    private static SQLQuery instance = null;
     private DSLContext dslContext;
 
-    public static SQLQuerries getInstance() {
-        return instance == null ? instance = new SQLQuerries() : instance;
+    public static SQLQuery getInstance() {
+        return instance == null ? instance = new SQLQuery() : instance;
     }
 
-    private SQLQuerries() {
+    private SQLQuery() {
         // disable logo output of jooq
         System.getProperties().setProperty("org.jooq.no-logo", "true");
 
@@ -29,6 +29,7 @@ public class SQLQuerries {
             dslContext = DSL.using(connection, SQLDialect.MYSQL);
         } catch (Exception e) {
             System.err.println("Connection could not be established");
+            e.printStackTrace();
             System.exit(1);
         }
     }
@@ -86,6 +87,17 @@ public class SQLQuerries {
         Result result = null;
         try {
             result = dslContext.select().from(AUSSTATTUNGSGEGENSTAND).fetch();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    // DEBUG ONLY TODO remove this for deploy
+    public Result<Record> doCustomQuery(String s) throws Exception {
+        Result<Record> result = null;
+        try {
+            result = dslContext.resultQuery(s).fetch();
         } catch (Exception e) {
             e.printStackTrace();
         }

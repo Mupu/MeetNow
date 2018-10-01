@@ -1,3 +1,5 @@
+import com.sun.javafx.runtime.SystemProperties
+
 plugins {
     id 'java'
     id 'nu.studer.jooq' version '3.0.2'
@@ -17,6 +19,10 @@ repositories {
 }
 
 dependencies {
+    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+
     jooqRuntime 'mysql:mysql-connector-java:8.0.12'
     implementation 'org.jooq:jooq:3.11.5'
     implementation 'org.jooq:jooq-meta:3.11.5'
@@ -50,10 +56,28 @@ jooq {
 task runMain(type: JavaExec) {
     classpath sourceSets.main.runtimeClasspath
     main = "me.mupu.ServerMain"
-    //   add system properties so the java programm can get this data
+}
+
+tasks.withType(JavaExec) {
+    // Assign all Java system properties from
+    // the command line to the JavaExec task.
     System.setProperty("user", "$puser")
     System.setProperty("password", "$ppassword")
     System.setProperty("url", "$purl")
     System.setProperty("driver", "$pdriver")
-    systemProperties(System.getProperties().subMap(["user","password","url","driver"]))
+    systemProperties System.getProperties().subMap(["user","password","url","driver"])
+}
+
+tasks.withType(Test) {
+    // Assign all Java system properties from
+    // the command line to the JavaExec task.
+    System.setProperty("user", "$puser")
+    System.setProperty("password", "$ppassword")
+    System.setProperty("url", "$purl")
+    System.setProperty("driver", "$pdriver")
+    systemProperties System.getProperties().subMap(["user","password","url","driver"])
+}
+
+test {
+    useJUnitPlatform()
 }

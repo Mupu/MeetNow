@@ -1,7 +1,8 @@
 package me.mupu;
 
 import fi.iki.elonen.NanoHTTPD;
-import me.mupu.sql.SQLQuerries;
+import me.mupu.sql.SQLQuery;
+
 import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,6 +13,8 @@ public class ServerMain extends NanoHTTPD {
 
     public static void main(String[] args) {
         new ServerMain();
+        //todo remove this
+        SQLQuery.getInstance();
     }
 
     private ServerMain() {

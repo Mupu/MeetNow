@@ -8,6 +8,7 @@ import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.*;
 import org.apache.http.ssl.SSLContextBuilder;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -17,9 +18,18 @@ import javax.net.ssl.SSLContext;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ServerMainTest {
 
+    ServerMain server;
+
     @BeforeAll
     void startServer() {
-        new ServerMain(7327);
+        server = new ServerMain(7327);
+        System.out.println("Started server...");
+    }
+
+    @AfterAll
+    void stopServer() {
+        server.stop();
+        System.out.println("Stopped server!");
     }
 
     @Test

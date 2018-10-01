@@ -1,6 +1,7 @@
 package me.mupu;
 
 import fi.iki.elonen.NanoHTTPD;
+import me.mupu.sessionHandler.HttpSessionHandler;
 import me.mupu.sql.SQLQuery;
 
 import javax.net.ssl.KeyManagerFactory;
@@ -98,6 +99,6 @@ public class ServerMain extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-        return new HttpSessionHandler().handle(session);
+        return HttpSessionHandler.handle(session);
     }
 }

@@ -1,6 +1,5 @@
 package me.mupu.sql;
 
-
 /**
  * Based on meetnowTestdata.sql script
  */

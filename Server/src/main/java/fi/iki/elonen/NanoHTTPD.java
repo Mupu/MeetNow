@@ -1,12 +1,11 @@
 package fi.iki.elonen;
 /**
  * MODIFIED VERSION
- *
- * added cookie support all atributes
+ * <p>
+ * added cookie support all attributes
  * fixed a where you weren't able to set multiple cookies with one response
- *
+ * <p>
  * Version its based of:
- *
  * maven central: org.nanohttpd:nanohttpd:2.3.1
  */
 
@@ -223,16 +222,14 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * MODIFIED BY ME
+     * MODIFIED
      */
     public static class Cookie {
 
-        public static String getHTTPTime(int days) {
-            Calendar calendar = Calendar.getInstance();
-            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
-            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-            calendar.add(Calendar.DAY_OF_MONTH, days);
-            return dateFormat.format(calendar.getTime());
+        public static String getHTTPTime(int seconds) {
+            Calendar c = Calendar.getInstance(timeZone, locale);
+            c.add(Calendar.SECOND, seconds);
+            return c.getTime().toString();
         }
 
         private final String n, v, e;
@@ -241,10 +238,10 @@ public abstract class NanoHTTPD {
             this(name, value, 30);
         }
 
-        public Cookie(String name, String value, int numDays) {
+        public Cookie(String name, String value, int numSeconds) {
             this.n = name;
             this.v = value;
-            this.e = getHTTPTime(numDays);
+            this.e = getHTTPTime(numSeconds);
         }
 
         public Cookie(String name, String value, String expires) {
@@ -384,8 +381,9 @@ public abstract class NanoHTTPD {
          */
         public void unloadQueue(Response response) {
             for (Cookie cookie : this.queue) {
-                response.addHeader("Set-Cookie", cookie.getHTTPHeader());
+                response.addCookieHeader(cookie.getHTTPHeader());
             }
+            this.queue.clear();
         }
     }
 
@@ -758,7 +756,7 @@ public abstract class NanoHTTPD {
                 while (line != null && !line.trim().isEmpty()) {
                     int p = line.indexOf(':');
                     if (p >= 0) {
-                        headers.put(line.substring(0, p).trim().toLowerCase(Locale.US), line.substring(p + 1).trim());
+                        headers.put(line.substring(0, p).trim().toLowerCase(locale), line.substring(p + 1).trim());
                     }
                     line = in.readLine();
                 }
@@ -1535,7 +1533,9 @@ public abstract class NanoHTTPD {
             public String put(String key, String value) {
                 lowerCaseHeader.put(key == null ? key : key.toLowerCase(), value);
                 return super.put(key, value);
-            };
+            }
+
+            ;
         };
 
         /**
@@ -1558,9 +1558,12 @@ public abstract class NanoHTTPD {
 
         private boolean keepAlive;
 
+        private List<String> cookieHeaders;
+
         /**
          * Creates a fixed length response if totalBytes>=0, otherwise chunked.
          */
+        @SuppressWarnings({"rawtypes", "unchecked"})
         protected Response(IStatus status, String mimeType, InputStream data, long totalBytes) {
             this.status = status;
             this.mimeType = mimeType;
@@ -1572,7 +1575,8 @@ public abstract class NanoHTTPD {
                 this.contentLength = totalBytes;
             }
             this.chunkedTransfer = this.contentLength < 0;
-            keepAlive = true;
+            this.keepAlive = true;
+            this.cookieHeaders = new ArrayList<>(10);
         }
 
         @Override
@@ -1580,6 +1584,14 @@ public abstract class NanoHTTPD {
             if (this.data != null) {
                 this.data.close();
             }
+        }
+
+        /**
+         * Adds a cookie header to the list.
+         * Should not be called manually, this is an internal utility.
+         */
+        public void addCookieHeader(String cookie) {
+            cookieHeaders.add(cookie);
         }
 
         /**
@@ -1643,9 +1655,6 @@ public abstract class NanoHTTPD {
          * Sends given response to the socket.
          */
         protected void send(OutputStream outputStream) {
-            SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
-            gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
-
             try {
                 if (this.status == null) {
                     throw new Error("sendResponse(): Status can't be null.");
@@ -1656,10 +1665,13 @@ public abstract class NanoHTTPD {
                     printHeader(pw, "Content-Type", this.mimeType);
                 }
                 if (getHeader("date") == null) {
-                    printHeader(pw, "Date", gmtFrmt.format(new Date()));
+                    printHeader(pw, "Date", Calendar.getInstance(timeZone, locale).getTime().toString());
                 }
                 for (Entry<String, String> entry : this.header.entrySet()) {
                     printHeader(pw, entry.getKey(), entry.getValue());
+                }
+                for (String cookieHeader : this.cookieHeaders) {
+                    printHeader(pw, "Set-Cookie", cookieHeader);
                 }
                 if (getHeader("connection") == null) {
                     printHeader(pw, "Connection", (this.keepAlive ? "keep-alive" : "close"));
@@ -1678,6 +1690,7 @@ public abstract class NanoHTTPD {
                     pending = sendContentLengthHeaderIfNotAlreadyPresent(pw, pending);
                 }
                 pw.append("\r\n");
+//                System.out.println(pw.toString());
                 pw.flush();
                 sendBodyWithCorrectTransferAndEncoding(outputStream, pending);
                 outputStream.flush();
@@ -1955,7 +1968,9 @@ public abstract class NanoHTTPD {
         } catch (IOException e) {
             LOG.log(Level.INFO, "no mime types available at " + resourceName);
         }
-    };
+    }
+
+    ;
 
     /**
      * Creates an SSLSocketFactory for HTTPS. Pass a loaded KeyStore and an
@@ -2066,10 +2081,28 @@ public abstract class NanoHTTPD {
     private TempFileManagerFactory tempFileManagerFactory;
 
     /**
+     * Default Locale
+     */
+    private static Locale locale = Locale.GERMANY;
+
+    /**
+     * Default TimeZone
+     */
+    private static TimeZone timeZone = TimeZone.getTimeZone("GMT+2");
+
+    /**
      * Constructs an HTTP server on given port.
      */
     public NanoHTTPD(int port) {
         this(null, port);
+    }
+
+    /**
+     * Constructs an HTTP server on given port
+     * and sets default Locale and TimeZone.
+     */
+    public NanoHTTPD(int port, Locale locale, TimeZone timeZone) {
+        this(null, port, locale, timeZone);
     }
 
     // -------------------------------------------------------------------------------
@@ -2086,6 +2119,19 @@ public abstract class NanoHTTPD {
     public NanoHTTPD(String hostname, int port) {
         this.hostname = hostname;
         this.myPort = port;
+        setTempFileManagerFactory(new DefaultTempFileManagerFactory());
+        setAsyncRunner(new DefaultAsyncRunner());
+    }
+
+    /**
+     * Constructs an HTTP server on given hostname and port
+     * and sets default Locale and TimeZone.
+     */
+    public NanoHTTPD(String hostname, int port, Locale locale, TimeZone timeZone) {
+        this.hostname = hostname;
+        this.myPort = port;
+        NanoHTTPD.locale = locale;
+        NanoHTTPD.timeZone = timeZone;
         setTempFileManagerFactory(new DefaultTempFileManagerFactory());
         setAsyncRunner(new DefaultAsyncRunner());
     }

@@ -7,12 +7,13 @@ import me.mupu.sql.SQLQuery;
 import org.jooq.Record;
 
 import java.util.Arrays;
+import java.util.Calendar;
 
 public class HttpSessionHandler {
 
     private static HttpSessionHandler instance = null;
     private Mapper<RequestHandler> context;
-    public final static String COOKIE_USERNAME = "user";
+    public final static String COOKIE_USERNAME = "username";
     public final static String COOKIE_PASSWORD = "password";
 
 
@@ -33,15 +34,11 @@ public class HttpSessionHandler {
 
         System.out.println(debugString(session));
 
-
         Response response = NanoHTTPD.newFixedLengthResponse(loginAndSetCookies(session));
 
 //        Response response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session);
 //        response = NanoHTTPD.newFixedLengthResponse(debugString(session));
 //        response.setMimeType(NanoHTTPD.MIME_PLAINTEXT);
-
-        // add cookies
-        session.getCookies().unloadQueue(response);
         return response;
     }
 
@@ -53,18 +50,19 @@ public class HttpSessionHandler {
         // if user has logged in successfully
         if (r != null) {
             // override / add password cookie
-            session.getCookies().set(new MyCookie(COOKIE_PASSWORD, session.getCookies().read(COOKIE_PASSWORD), 1)
+            session.getCookies().set(new Cookie(COOKIE_PASSWORD, session.getCookies().read(COOKIE_PASSWORD), 60*60*24*2)
+                    .setSecure(true)
+                    .setHttpOnly(true)
+                    .setSameSite("Strict")
+            );
+
+            // override / add user cookie
+            session.getCookies().set(new Cookie(COOKIE_USERNAME, session.getCookies().read(COOKIE_USERNAME), 60*60*24*2)
                     .setSecure(true)
                     .setHttpOnly(true)
                     .setSameSite("Strict")
             );
         }
-            // override / add user cookie
-            session.getCookies().set(new MyCookie(COOKIE_USERNAME, session.getCookies().read(COOKIE_USERNAME), 1)
-                    .setSecure(true)
-                    .setHttpOnly(true)
-                    .setSameSite("Strict")
-            );
         return r != null ? r.formatJSON() : "not logged in";
     }
 
@@ -86,54 +84,4 @@ public class HttpSessionHandler {
                 + "\nCOOKIES:\n" + cookies;
     }
 
-    //TODO REMOVE
-    public static class MyCookie extends Cookie {
-
-        public MyCookie(String name, String value) {
-            super(name, value);
-        }
-
-        public MyCookie(String name, String value, int numDays) {
-            super(name, value, numDays);
-        }
-
-        public MyCookie(String name, String value, String expires) {
-            super(name, value, expires);
-        }
-
-        private String path = "/";
-        private String sameSite = "";
-        private boolean httpOnly = false;
-        private boolean secure = false;
-
-        @Override
-        public String getHTTPHeader() {
-            String fmt = super.getHTTPHeader() + " ;path=%s ;%s ;%s";
-            return String.format(fmt,
-                    this.path,
-                    this.secure ? "secure" : "",
-                    this.httpOnly ? "HttpOnly" : "") +
-                    (!sameSite.equals("") ? " ;SameSite=" + sameSite : "");
-        }
-
-        public MyCookie setPath(String path) {
-            this.path = path;
-            return this;
-        }
-
-        public MyCookie setHttpOnly(boolean httpOnly) {
-            this.httpOnly = httpOnly;
-            return this;
-        }
-
-        public MyCookie setSecure(boolean secure) {
-            this.secure = secure;
-            return this;
-        }
-
-        public MyCookie setSameSite(String sameSite) {
-            this.sameSite = sameSite;
-            return this;
-        }
-    }
 }

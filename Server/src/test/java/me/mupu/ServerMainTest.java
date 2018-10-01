@@ -63,6 +63,7 @@ class ServerMainTest {
         c1.setSecure(true);
         c2.setSecure(true);
         c1.setAttribute("httponly", "");
+
         cookieStore.addCookie(c1);
         cookieStore.addCookie(c2);
 

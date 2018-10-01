@@ -1,5 +1,6 @@
 package me.mupu.sql;
 
+import me.mupu.Hash;
 import org.jooq.*;
 import org.jooq.exception.NoDataFoundException;
 import org.jooq.impl.DSL;
@@ -15,7 +16,8 @@ public class SQLQuery {
     private static SQLQuery instance = null;
     private DSLContext dslContext;
 
-    public static SQLQuery getInstance() {
+
+    private static SQLQuery getInstance() {
         return instance == null ? instance = new SQLQuery() : instance;
     }
 
@@ -34,25 +36,36 @@ public class SQLQuery {
         }
     }
 
-    public Record checkLogin(String name, String passwort) {
+    /**
+     * Checks if the user exists, and if so, if the password is correct.
+     *
+     * @return Found Record if the above is true. Otherwise null
+     */
+    public static Record checkLogin(String name, String passwort) {
         Record result = null;
+        boolean isCorrect = false;
         try {
-            result = dslContext.select().from(BENUTZER)
-                    .where(BENUTZER.BENUTZERNAME.eq(name),
-                            BENUTZER.PASSWORT.eq(passwort))
+            result = getInstance().dslContext.select().from(BENUTZER)
+                    .where(BENUTZER.BENUTZERNAME.eq(name))
                     .fetchSingle();
-        } catch (NoDataFoundException e) {
+
+            isCorrect = Hash.validatePassword(passwort, result.get(BENUTZER.PASSWORT));
 
         } catch (Exception e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
+        if (!isCorrect) {
+            System.out.println("Login failed!");
+            result = null;
+        } else
+            System.out.println("Logged in!");
         return result;
     }
 
-    public Result getTermine(int benutzerId) {
+    public static Result getTermine(int benutzerId) {
         Result result = null;
         try {
-            result = dslContext.select().from(TEILNAHME).leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
+            result = getInstance().dslContext.select().from(TEILNAHME).leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
                     .where(TEILNAHME.BENUTZERID.eq(UInteger.valueOf(benutzerId)),
                             BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.currentTimestamp()))
                     .orderBy(BESPRECHUNG.ZEITRAUMSTART.asc(), BESPRECHUNG.ZEITRAUMENDE.asc())
@@ -63,30 +76,30 @@ public class SQLQuery {
         return result;
     }
 
-    public Result getPersonen() {
+    public static Result getPersonen() {
         Result result = null;
         try {
-            result = dslContext.select().from(PERSON).fetch();
+            result = getInstance().dslContext.select().from(PERSON).fetch();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
 
-    public Result getRaume() {
+    public static Result getRaume() {
         Result result = null;
         try {
-            result = dslContext.select().from(RAUM).fetch();
+            result = getInstance().dslContext.select().from(RAUM).fetch();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
     }
 
-    public Result getAusstattungsgegenstande() {
+    public static Result getAusstattungsgegenstande() {
         Result result = null;
         try {
-            result = dslContext.select().from(AUSSTATTUNGSGEGENSTAND).fetch();
+            result = getInstance().dslContext.select().from(AUSSTATTUNGSGEGENSTAND).fetch();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -94,8 +107,8 @@ public class SQLQuery {
     }
 
     // DEBUG ONLY TODO remove this for deploy
-    public DSLContext getContext(){
-        return dslContext;
+    public static DSLContext getContext() {
+        return getInstance().dslContext;
     }
 
 }

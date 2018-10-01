@@ -27,7 +27,7 @@ class HashTest {
     void hashTestDatabase() throws Exception {
         String originalPassword;
 
-        Result<Record2<String, String>> data = SQLQuery.getInstance().getContext()
+        Result<Record2<String, String>> data = SQLQuery.getContext()
                 .select(PERSON.NACHNAME.as("orPassword"), BENUTZER.PASSWORT)
                 .from(PERSON, BENUTZER)
                 .where(BENUTZER.PERSONID.eq(PERSON.PERSONID))

@@ -1,15 +1,15 @@
-package me.mupu.sessionHandler;
+package me.mupu;
 
 import org.apache.http.util.Args;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class MyHttpContext<U> {
+public class Mapper<U> {
     private final U contextNotFound;
     private final Map<String, U> map;
 
-    public MyHttpContext(U contextNotFound) {
+    public Mapper(U contextNotFound) {
         this.map = new ConcurrentHashMap<>();
         this.contextNotFound = contextNotFound;
     }

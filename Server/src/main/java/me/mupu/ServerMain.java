@@ -14,8 +14,6 @@ public class ServerMain extends NanoHTTPD {
 
     public static void main(String[] args) {
         new ServerMain(443);
-        //todo remove this
-        SQLQuery.getInstance();
     }
 
     public ServerMain(int port) {
@@ -44,56 +42,6 @@ public class ServerMain extends NanoHTTPD {
 
         } catch (Exception e) {
             System.err.println("Couldn't start server:\n" + e);
-        }
-    }
-
-    private static class MyCookie extends Cookie {
-
-        public MyCookie(String name, String value) {
-            super(name, value);
-        }
-
-        public MyCookie(String name, String value, int numDays) {
-            super(name, value, numDays);
-        }
-
-        public MyCookie(String name, String value, String expires) {
-            super(name, value, expires);
-        }
-
-        private String path = "/";
-        private String sameSite = "";
-        private boolean httpOnly = false;
-        private boolean secure = false;
-
-        @Override
-        public String getHTTPHeader() {
-            String fmt =  super.getHTTPHeader() + " ;path=%s ;%s ;%s";
-            return String.format(fmt,
-                    this.path,
-                    this.secure ? "secure" : "",
-                    this.httpOnly ? "HttpOnly" : "") +
-                    (!sameSite.equals("") ?  " ;SameSite=" + sameSite : "");
-        }
-
-        public MyCookie setPath(String path) {
-            this.path = path;
-            return this;
-        }
-
-        public MyCookie setHttpOnly(boolean httpOnly) {
-            this.httpOnly = httpOnly;
-            return this;
-        }
-
-        public MyCookie setSecure(boolean secure) {
-            this.secure = secure;
-            return this;
-        }
-
-        public MyCookie setSameSite(String sameSite) {
-            this.sameSite = sameSite;
-            return this;
         }
     }
 

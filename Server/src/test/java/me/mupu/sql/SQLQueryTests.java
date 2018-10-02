@@ -1,6 +1,7 @@
 package me.mupu.sql;
 
 import org.jooq.Record;
+import org.jooq.Result;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,13 +16,13 @@ public class SQLQueryTests {
         String name = "Alex";
         String pw = "Schmidt";
 
-        Record userTest1 = SQLQuery.checkLogin(name, pw);
+        Result<Record> userTest1 = SQLQuery.checkLogin(name, pw);
         Assertions.assertNotNull(userTest1);
 
         System.out.println(name + ":" + pw + ":true");
         System.out.println(userTest1);
 
-        Record userTest2 = SQLQuery.checkLogin(name, "wrongPassword");
+        Result<Record> userTest2 = SQLQuery.checkLogin(name, "wrongPassword");
         Assertions.assertNull(userTest2);
         System.out.println(name + ":" + "wrongPassword" + ":false");
     }

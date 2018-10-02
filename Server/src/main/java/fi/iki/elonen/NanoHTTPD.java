@@ -227,9 +227,11 @@ public abstract class NanoHTTPD {
     public static class Cookie {
 
         public static String getHTTPTime(int seconds) {
-            Calendar c = Calendar.getInstance(timeZone, locale);
-            c.add(Calendar.SECOND, seconds);
-            return c.getTime().toString();
+            Calendar calendar = Calendar.getInstance();
+            SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US);
+            dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+            calendar.add(Calendar.SECOND, seconds);
+            return dateFormat.format(calendar.getTime());
         }
 
         private final String n, v, e;
@@ -756,7 +758,7 @@ public abstract class NanoHTTPD {
                 while (line != null && !line.trim().isEmpty()) {
                     int p = line.indexOf(':');
                     if (p >= 0) {
-                        headers.put(line.substring(0, p).trim().toLowerCase(locale), line.substring(p + 1).trim());
+                        headers.put(line.substring(0, p).trim().toLowerCase(Locale.US), line.substring(p + 1).trim());
                     }
                     line = in.readLine();
                 }
@@ -1655,6 +1657,9 @@ public abstract class NanoHTTPD {
          * Sends given response to the socket.
          */
         protected void send(OutputStream outputStream) {
+            SimpleDateFormat gmtFrmt = new SimpleDateFormat("E, d MMM yyyy HH:mm:ss 'GMT'", Locale.US);
+            gmtFrmt.setTimeZone(TimeZone.getTimeZone("GMT"));
+
             try {
                 if (this.status == null) {
                     throw new Error("sendResponse(): Status can't be null.");
@@ -1665,7 +1670,7 @@ public abstract class NanoHTTPD {
                     printHeader(pw, "Content-Type", this.mimeType);
                 }
                 if (getHeader("date") == null) {
-                    printHeader(pw, "Date", Calendar.getInstance(timeZone, locale).getTime().toString());
+                    printHeader(pw, "Date", gmtFrmt.format(new Date()));
                 }
                 for (Entry<String, String> entry : this.header.entrySet()) {
                     printHeader(pw, entry.getKey(), entry.getValue());
@@ -2081,28 +2086,10 @@ public abstract class NanoHTTPD {
     private TempFileManagerFactory tempFileManagerFactory;
 
     /**
-     * Default Locale
-     */
-    private static Locale locale = Locale.GERMANY;
-
-    /**
-     * Default TimeZone
-     */
-    private static TimeZone timeZone = TimeZone.getTimeZone("GMT+2");
-
-    /**
      * Constructs an HTTP server on given port.
      */
     public NanoHTTPD(int port) {
         this(null, port);
-    }
-
-    /**
-     * Constructs an HTTP server on given port
-     * and sets default Locale and TimeZone.
-     */
-    public NanoHTTPD(int port, Locale locale, TimeZone timeZone) {
-        this(null, port, locale, timeZone);
     }
 
     // -------------------------------------------------------------------------------
@@ -2119,19 +2106,6 @@ public abstract class NanoHTTPD {
     public NanoHTTPD(String hostname, int port) {
         this.hostname = hostname;
         this.myPort = port;
-        setTempFileManagerFactory(new DefaultTempFileManagerFactory());
-        setAsyncRunner(new DefaultAsyncRunner());
-    }
-
-    /**
-     * Constructs an HTTP server on given hostname and port
-     * and sets default Locale and TimeZone.
-     */
-    public NanoHTTPD(String hostname, int port, Locale locale, TimeZone timeZone) {
-        this.hostname = hostname;
-        this.myPort = port;
-        NanoHTTPD.locale = locale;
-        NanoHTTPD.timeZone = timeZone;
         setTempFileManagerFactory(new DefaultTempFileManagerFactory());
         setAsyncRunner(new DefaultAsyncRunner());
     }

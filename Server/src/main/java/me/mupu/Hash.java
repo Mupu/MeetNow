@@ -1,5 +1,7 @@
 package me.mupu;
 
+
+import lombok.NonNull;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import java.math.BigInteger;
@@ -9,7 +11,7 @@ import java.security.spec.InvalidKeySpecException;
 
 public class Hash {
 
-    public static String generatePasswordHash(String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static String generatePasswordHash(@NonNull final String password) throws NoSuchAlgorithmException, InvalidKeySpecException {
         int iterations = 12345;
         char[] chars = password.toCharArray();
         byte[] salt = getSalt();
@@ -38,7 +40,7 @@ public class Hash {
         }
     }
 
-    public static boolean validatePassword(String originalPassword, String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
+    public static boolean validatePassword(@NonNull final String originalPassword, @NonNull final String storedPassword) throws NoSuchAlgorithmException, InvalidKeySpecException {
         String[] parts = storedPassword.split(":");
         int iterations = Integer.parseInt(parts[0]);
         byte[] salt = fromHex(parts[1]);

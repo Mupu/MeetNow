@@ -47,6 +47,6 @@ public class ServerMain extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
-        return HttpSessionHandler.handle(session);
+        return HttpSessionHandler.getInstance().handle(session);
     }
 }

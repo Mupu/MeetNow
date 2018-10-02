@@ -1,8 +1,8 @@
 package me.mupu.sql;
 
+import lombok.NonNull;
 import me.mupu.Hash;
 import org.jooq.*;
-import org.jooq.exception.NoDataFoundException;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
 
@@ -41,28 +41,28 @@ public class SQLQuery {
      *
      * @return Found Record if the above is true. Otherwise null
      */
-    public static Record checkLogin(String name, String passwort) {
-        Record result = null;
+    public static Result<Record> checkLogin(final String name, final String passwort) {
+        if (name == null || passwort == null)
+            return null;
+
+        Result<Record> result = null;
         boolean isCorrect = false;
         try {
             result = getInstance().dslContext.select().from(BENUTZER)
                     .where(BENUTZER.BENUTZERNAME.eq(name))
-                    .fetchSingle();
+                    .limit(1)
+                    .fetch();
 
-            isCorrect = Hash.validatePassword(passwort, result.get(BENUTZER.PASSWORT));
+            isCorrect = Hash.validatePassword(passwort, result.get(0).get(BENUTZER.PASSWORT));
+        } catch (Exception ignored) { }
 
-        } catch (Exception e) {
-//            e.printStackTrace();
-        }
-        if (!isCorrect) {
-            System.out.println("Login failed!");
+        if (!isCorrect)
             result = null;
-        } else
-            System.out.println("Logged in!");
         return result;
     }
 
-    public static Result getTermine(int benutzerId) {
+    public static Result<Record> getTermine(final int benutzerId) {
+
         Result result = null;
         try {
             result = getInstance().dslContext.select().from(TEILNAHME).leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
@@ -76,7 +76,7 @@ public class SQLQuery {
         return result;
     }
 
-    public static Result getPersonen() {
+    public static Result<Record> getPersonen() {
         Result result = null;
         try {
             result = getInstance().dslContext.select().from(PERSON).fetch();
@@ -86,7 +86,7 @@ public class SQLQuery {
         return result;
     }
 
-    public static Result getRaume() {
+    public static Result<Record> getRaume() {
         Result result = null;
         try {
             result = getInstance().dslContext.select().from(RAUM).fetch();
@@ -96,7 +96,7 @@ public class SQLQuery {
         return result;
     }
 
-    public static Result getAusstattungsgegenstande() {
+    public static Result<Record> getAusstattungsgegenstande() {
         Result result = null;
         try {
             result = getInstance().dslContext.select().from(AUSSTATTUNGSGEGENSTAND).fetch();

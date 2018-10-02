@@ -5,21 +5,32 @@ import fi.iki.elonen.NanoHTTPD.*;
 import me.mupu.Mapper;
 import me.mupu.sql.SQLQuery;
 import org.jooq.Record;
+import org.jooq.Result;
 
-import java.util.Arrays;
-import java.util.Calendar;
+import java.util.*;
 
 public class HttpSessionHandler {
 
     private static HttpSessionHandler instance = null;
-    private Mapper<RequestHandler> context;
+
+    public static HttpSessionHandler getInstance() {
+        if (instance == null)
+            instance = new HttpSessionHandler();
+        return instance;
+    }
+
+    /**
+     *  This mapper is used to handle the contexts of http (https://ip/thisPart).
+     *  When a context is not found, the default handler is used .
+     */
+    private final Mapper<RequestHandler> context;
     public final static String COOKIE_USERNAME = "username";
     public final static String COOKIE_PASSWORD = "password";
 
 
     private HttpSessionHandler() {
-        context = new Mapper<>(new RequestHandler() {
-        });
+        // default handler
+        context = new Mapper<>(new HandlerContextNotFound());
         context.setAttribute("/ausleihe", new HandlerAusleihe());
         context.setAttribute("/ausstattungsgegenstand", new HandlerAusstattungsgegenstand());
         context.setAttribute("/benutzer", new HandlerBenutzer());
@@ -29,44 +40,50 @@ public class HttpSessionHandler {
         context.setAttribute("/teilnahme", new HandlerTeilnahme());
     }
 
-    public static Response handle(IHTTPSession session) {
+    public Response handle(IHTTPSession session) {
         if (instance == null) instance = new HttpSessionHandler();
-
         System.out.println(debugString(session));
 
-        Response response = NanoHTTPD.newFixedLengthResponse(loginAndSetCookies(session));
+        Response response;
 
-//        Response response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session);
-//        response = NanoHTTPD.newFixedLengthResponse(debugString(session));
-//        response.setMimeType(NanoHTTPD.MIME_PLAINTEXT);
+        Result<Record> userdata = SQLQuery.checkLogin(
+                session.getCookies().read(COOKIE_USERNAME),
+                session.getCookies().read(COOKIE_PASSWORD));
+
+
+
+        if (userdata != null) {
+            // logged in
+            setCookies(session.getCookies());
+            response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
+        } else {
+            // failed to log in
+            response = NanoHTTPD.newFixedLengthResponse(
+                    Response.Status.UNAUTHORIZED,
+                    NanoHTTPD.MIME_PLAINTEXT,
+                    "Wrong username or password.");
+        }
+
         return response;
     }
 
-    private static String loginAndSetCookies(IHTTPSession session) {
-        // check if login is correct
-        Record r = SQLQuery.checkLogin(
-                session.getCookies().read(COOKIE_USERNAME) != null ? session.getCookies().read(COOKIE_USERNAME) : "",
-                session.getCookies().read(COOKIE_PASSWORD) != null ? session.getCookies().read(COOKIE_PASSWORD) : "");
-        // if user has logged in successfully
-        if (r != null) {
-            // override / add password cookie
-            session.getCookies().set(new Cookie(COOKIE_PASSWORD, session.getCookies().read(COOKIE_PASSWORD), 60*60*24*2)
-                    .setSecure(true)
-                    .setHttpOnly(true)
-                    .setSameSite("Strict")
-            );
+    private void setCookies(CookieHandler cookieHandler) {
+        // override / add password cookie
+        cookieHandler.set(new Cookie(COOKIE_PASSWORD, cookieHandler.read(COOKIE_PASSWORD), 60 * 60 * 24 * 2)
+                .setSecure(true)
+                .setHttpOnly(true)
+                .setSameSite("Strict")
+        );
 
-            // override / add user cookie
-            session.getCookies().set(new Cookie(COOKIE_USERNAME, session.getCookies().read(COOKIE_USERNAME), 60*60*24*2)
-                    .setSecure(true)
-                    .setHttpOnly(true)
-                    .setSameSite("Strict")
-            );
-        }
-        return r != null ? r.formatJSON() : "not logged in";
+        // override / add user cookie
+        cookieHandler.set(new Cookie(COOKIE_USERNAME, cookieHandler.read(COOKIE_USERNAME), 60 * 60 * 24 * 2)
+                .setSecure(true)
+                .setHttpOnly(true)
+                .setSameSite("Strict")
+        );
     }
 
-    private static String debugString(IHTTPSession session) {
+    private String debugString(IHTTPSession session) {
         StringBuilder cookies = new StringBuilder();
         session.getCookies().iterator().forEachRemaining(c -> cookies.append(c + ": " + session.getCookies().read(c) + "\n"));
 

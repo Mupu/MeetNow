@@ -13,6 +13,7 @@ public class HandlerAusstattungsgegenstand implements RequestHandler {
     public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userData) {
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
-                NanoHTTPD.MIME_PLAINTEXT,"ausstattungsgegenstand");
+                HttpSessionHandler.CONTENT_TYPE,
+                "ausstattungsgegenstand");
     }
 }

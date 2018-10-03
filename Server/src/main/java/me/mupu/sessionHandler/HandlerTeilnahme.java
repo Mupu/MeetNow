@@ -32,7 +32,7 @@ public class HandlerTeilnahme implements RequestHandler {
             default:
                 response = NanoHTTPD.newFixedLengthResponse(
                         Status.METHOD_NOT_ALLOWED,
-                        NanoHTTPD.MIME_PLAINTEXT,
+                        HttpSessionHandler.CONTENT_TYPE,
                         "Method not allowed!");
         }
 
@@ -46,7 +46,7 @@ public class HandlerTeilnahme implements RequestHandler {
 
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
-                NanoHTTPD.MIME_PLAINTEXT,
+                HttpSessionHandler.CONTENT_TYPE,
                 termin.toString()
         );
     }

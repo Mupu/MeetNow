@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 
+import static me.mupu.sessionHandler.HttpSessionHandler.COOKIE_CONNECTION_TYPE;
 import static me.mupu.sessionHandler.HttpSessionHandler.COOKIE_USERNAME;
 import static me.mupu.sessionHandler.HttpSessionHandler.COOKIE_PASSWORD;
 
@@ -42,7 +43,7 @@ class ServerMainTest {
 
     @Test
     void testConnectionAndGetReqeuest() throws Exception {
-        String https_url = "https://localhost:7327/teilnahme?pete=ja%20&%20olo=4";
+        String https_url = "https://localhost:7327/teilnahme/?pete=ja%20&%20olo=4";
 
         // disable certificate check
         SSLContext sslContext = new SSLContextBuilder()
@@ -54,16 +55,18 @@ class ServerMainTest {
         Date date = calendar.getTime();
 
         CookieStore cookieStore = new BasicCookieStore();
+        BasicClientCookie c0 = new BasicClientCookie2(COOKIE_CONNECTION_TYPE, "desktop");
         BasicClientCookie c1 = new BasicClientCookie2(COOKIE_USERNAME, "Alex");
         BasicClientCookie c2 = new BasicClientCookie2(COOKIE_PASSWORD, "Schmidt");
-        c1.setExpiryDate(date);
-        c2.setExpiryDate(date);
+
+        c0.setDomain("localhost");
         c1.setDomain("localhost");
         c2.setDomain("localhost");
+
         c1.setSecure(true);
         c2.setSecure(true);
-        c1.setAttribute("httponly", "");
 
+        cookieStore.addCookie(c0);
         cookieStore.addCookie(c1);
         cookieStore.addCookie(c2);
 

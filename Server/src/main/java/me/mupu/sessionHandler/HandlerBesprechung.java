@@ -13,6 +13,6 @@ public class HandlerBesprechung implements RequestHandler {
     public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userData) {
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
-                NanoHTTPD.MIME_PLAINTEXT,"besprechung");
+                HttpSessionHandler.CONTENT_TYPE,"besprechung");
     }
 }

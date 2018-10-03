@@ -8,6 +8,8 @@ import javax.net.ssl.KeyManagerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 
 public class ServerMain extends NanoHTTPD {

@@ -13,6 +13,6 @@ public class HandlerBenutzer implements RequestHandler {
     public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userData) {
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
-                NanoHTTPD.MIME_PLAINTEXT,"benutzer");
+                HttpSessionHandler.CONTENT_TYPE,"benutzer");
     }
 }

@@ -21,24 +21,27 @@ public class HttpSessionHandler {
     }
 
     /**
-     *  This mapper is used to handle the contexts of http (https://ip/thisPart).
-     *  When a context is not found, the default handler is used .
+     * This mapper is used to handle the contexts of http (https://ip/thisPart).
+     * When a context is not found, the default handler is used .
      */
     private final Mapper<RequestHandler> context;
     public final static String COOKIE_USERNAME = "username";
     public final static String COOKIE_PASSWORD = "password";
+    public final static String COOKIE_CONNECTION_TYPE = "connection_type";
+    public static String CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
 
 
     private HttpSessionHandler() {
         // default handler
         context = new Mapper<>(new HandlerContextNotFound());
-        context.setAttribute("/ausleihe", new HandlerAusleihe());
-        context.setAttribute("/ausstattungsgegenstand", new HandlerAusstattungsgegenstand());
-        context.setAttribute("/benutzer", new HandlerBenutzer());
-        context.setAttribute("/besprechung", new HandlerBesprechung());
-        context.setAttribute("/person", new HandlerPerson());
-        context.setAttribute("/raum", new HandlerRaum());
-        context.setAttribute("/teilnahme", new HandlerTeilnahme());
+        context.setAttribute("/settings", new HandlerSettings());
+        context.setAttribute("/ausleihe/", new HandlerAusleihe());
+        context.setAttribute("/ausstattungsgegenstand/", new HandlerAusstattungsgegenstand());
+        context.setAttribute("/benutzer/", new HandlerBenutzer());
+        context.setAttribute("/besprechung/", new HandlerBesprechung());
+        context.setAttribute("/person/", new HandlerPerson());
+        context.setAttribute("/raum/", new HandlerRaum());
+        context.setAttribute("/teilnahme/", new HandlerTeilnahme());
     }
 
     public Response handle(IHTTPSession session) {
@@ -52,16 +55,33 @@ public class HttpSessionHandler {
                 session.getCookies().read(COOKIE_PASSWORD));
 
 
-
         if (userdata != null) {
             // logged in
+
             setCookies(session.getCookies());
-            response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
+
+            if (userdata.getAccountstatus().intValue() == 1 || session.getUri().toLowerCase().equals("/settings")) {
+                response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
+            } else {
+                // force user to change name and password
+                String s;
+                if (session.getCookies().read(COOKIE_CONNECTION_TYPE).equals("desktop"))
+                    s = "/settings";
+                else
+                    s = "<head><meta http-equiv=\"refresh\" content=\"0; URL=https://"
+                            + session.getHeaders().get("host")
+                            + "/settings\" /></head>";
+
+                response = NanoHTTPD.newFixedLengthResponse(
+                        Response.Status.TEMPORARY_REDIRECT,
+                        CONTENT_TYPE,
+                        s);
+                }
         } else {
             // failed to log in
             response = NanoHTTPD.newFixedLengthResponse(
                     Response.Status.UNAUTHORIZED,
-                    NanoHTTPD.MIME_PLAINTEXT,
+                    CONTENT_TYPE,
                     "Wrong username or password.");
         }
 
@@ -69,6 +89,15 @@ public class HttpSessionHandler {
     }
 
     private void setCookies(CookieHandler cookieHandler) {
+        // override / add connection type cookie
+        if (cookieHandler.read(COOKIE_CONNECTION_TYPE) == null || !cookieHandler.read(COOKIE_CONNECTION_TYPE).equals("desktop")) {
+            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "app", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_HTML;
+        } else {
+            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "desktop", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
+        }
+
         // override / add password cookie
         cookieHandler.set(new Cookie(COOKIE_PASSWORD, cookieHandler.read(COOKIE_PASSWORD), 60 * 60 * 24 * 2)
                 .setSecure(true)

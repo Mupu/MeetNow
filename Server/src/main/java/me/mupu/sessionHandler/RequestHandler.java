@@ -9,7 +9,7 @@ import org.jooq.Result;
 
 
 public interface  RequestHandler {
-    Response response = NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, NanoHTTPD.MIME_PLAINTEXT, "File not Found!");
+    Response response = NanoHTTPD.newFixedLengthResponse(Response.Status.NOT_FOUND, HttpSessionHandler.CONTENT_TYPE, "File not Found!");
 
     default Response handle(IHTTPSession session, BenutzerRecord userData) {
         return response;

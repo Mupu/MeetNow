@@ -42,8 +42,8 @@ public class SQLQuery {
      *
      * @return Found Record if the above is true. Otherwise null
      */
-    public static BenutzerRecord checkLogin(final String name, final String passwort) {
-        if (name == null || passwort == null)
+    public static BenutzerRecord checkLogin(final String name, final String password) {
+        if (name == null || password == null)
             return null;
 
         BenutzerRecord result = null;
@@ -53,12 +53,16 @@ public class SQLQuery {
                     .where(BENUTZER.BENUTZERNAME.eq(name))
                     .fetchOne();
 
-            isCorrect = Hash.validatePassword(passwort, result.getPasswort());
+            isCorrect = Hash.validatePassword(password, result.getPasswort());
         } catch (Exception ignored) { }
 
         if (!isCorrect)
             result = null;
         return result;
+    }
+
+    public static BenutzerRecord changeUserdata(final String name, final String password) {
+        return null;
     }
 
     public static Result<Record> getTermine(final int benutzerId) {

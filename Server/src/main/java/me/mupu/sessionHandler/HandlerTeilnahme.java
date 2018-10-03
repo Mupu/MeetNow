@@ -13,12 +13,12 @@ import static jooq.Tables.*;
 
 public class HandlerTeilnahme implements RequestHandler {
     @Override
-    public Response handle(IHTTPSession session, BenutzerRecord userData) {
+    public Response handle(IHTTPSession session, BenutzerRecord userdata) {
         Response response;
 
         switch (session.getMethod()) {
             case GET:
-                response = get(userData);
+                response = get(userdata);
                 break;
 
             case POST:
@@ -39,8 +39,8 @@ public class HandlerTeilnahme implements RequestHandler {
         return response;
     }
 
-    private Response get(BenutzerRecord userData) {
-        Result<Record> termin = SQLQuery.getTermine(userData.getBenutzerid().intValue());
+    private Response get(BenutzerRecord userdata) {
+        Result<Record> termin = SQLQuery.getTermine(userdata.getBenutzerid().intValue());
         System.out.println(termin.into(TEILNAHME));
         System.out.println(termin.into(BESPRECHUNG));
 

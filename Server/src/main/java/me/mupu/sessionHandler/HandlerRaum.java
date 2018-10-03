@@ -10,7 +10,7 @@ import org.json.JSONArray;
 
 public class HandlerRaum implements RequestHandler {
     @Override
-    public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userData) {
+    public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userdata) {
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
                 NanoHTTPD.MIME_PLAINTEXT,

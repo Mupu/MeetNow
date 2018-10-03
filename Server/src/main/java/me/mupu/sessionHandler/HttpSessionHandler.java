@@ -2,6 +2,7 @@ package me.mupu.sessionHandler;
 
 import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.NanoHTTPD.*;
+import jooq.tables.records.BenutzerRecord;
 import me.mupu.Mapper;
 import me.mupu.sql.SQLQuery;
 import org.jooq.Record;
@@ -46,7 +47,7 @@ public class HttpSessionHandler {
 
         Response response;
 
-        Result<Record> userdata = SQLQuery.checkLogin(
+        BenutzerRecord userdata = SQLQuery.checkLogin(
                 session.getCookies().read(COOKIE_USERNAME),
                 session.getCookies().read(COOKIE_PASSWORD));
 

@@ -1,5 +1,6 @@
 package me.mupu.sql;
 
+import jooq.tables.records.BenutzerRecord;
 import lombok.NonNull;
 import me.mupu.Hash;
 import org.jooq.*;
@@ -41,19 +42,18 @@ public class SQLQuery {
      *
      * @return Found Record if the above is true. Otherwise null
      */
-    public static Result<Record> checkLogin(final String name, final String passwort) {
+    public static BenutzerRecord checkLogin(final String name, final String passwort) {
         if (name == null || passwort == null)
             return null;
 
-        Result<Record> result = null;
+        BenutzerRecord result = null;
         boolean isCorrect = false;
         try {
-            result = getInstance().dslContext.select().from(BENUTZER)
+            result = getInstance().dslContext.selectFrom(BENUTZER)
                     .where(BENUTZER.BENUTZERNAME.eq(name))
-                    .limit(1)
-                    .fetch();
+                    .fetchOne();
 
-            isCorrect = Hash.validatePassword(passwort, result.get(0).get(BENUTZER.PASSWORT));
+            isCorrect = Hash.validatePassword(passwort, result.getPasswort());
         } catch (Exception ignored) { }
 
         if (!isCorrect)
@@ -63,9 +63,11 @@ public class SQLQuery {
 
     public static Result<Record> getTermine(final int benutzerId) {
 
-        Result result = null;
+        Result<Record> result = null;
         try {
-            result = getInstance().dslContext.select().from(TEILNAHME).leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
+            result = getInstance().dslContext
+                    .select()
+                    .from(TEILNAHME).leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
                     .where(TEILNAHME.BENUTZERID.eq(UInteger.valueOf(benutzerId)),
                             BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.currentTimestamp()))
                     .orderBy(BESPRECHUNG.ZEITRAUMSTART.asc(), BESPRECHUNG.ZEITRAUMENDE.asc())

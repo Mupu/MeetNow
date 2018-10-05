@@ -13,7 +13,9 @@ public class HandlerRaum implements RequestHandler {
     public NanoHTTPD.Response handle(IHTTPSession session, BenutzerRecord userdata) {
         return NanoHTTPD.newFixedLengthResponse(
                 Status.OK,
-                NanoHTTPD.MIME_PLAINTEXT,
-                "raum");
+                HttpSessionHandler.CONTENT_TYPE,
+                "<html><body>" +
+                        "<button type=\"button\" onclick=\"document.cookie=&quot;lastname=Smith;expires=Wed, 18 Dec 2023 12:00:00 GMT&quot;\">Create Cookie 2</button>" +
+                        "</body></html>");
     }
 }

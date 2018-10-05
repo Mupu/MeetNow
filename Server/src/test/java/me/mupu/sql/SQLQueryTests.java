@@ -1,6 +1,7 @@
 package me.mupu.sql;
 
 import jooq.tables.records.BenutzerRecord;
+import me.mupu.Hash;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.junit.jupiter.api.Assertions;
@@ -26,6 +27,28 @@ public class SQLQueryTests {
         BenutzerRecord userTest2 = SQLQuery.checkLogin(name, "wrongPassword");
         Assertions.assertNull(userTest2);
         System.out.println(name + ":" + "wrongPassword" + ":false");
+    }
+
+    @Test
+    void TestChangeUserdata() throws Exception{
+        String name = "RoxannePeters";
+        String pw = "RoxannePeters";
+
+        BenutzerRecord userdata = SQLQuery.checkLogin(name, pw);
+
+        SQLQuery.changeUserdata(userdata);
+
+        userdata.setBenutzername("rocky");
+        userdata.setPasswort(Hash.generatePasswordHash("rocky1"));
+        Assertions.assertTrue(SQLQuery.changeUserdata(userdata));
+
+        userdata.setBenutzername("rocky1");
+        userdata.setPasswort(Hash.generatePasswordHash("rocky2"));
+        Assertions.assertTrue(SQLQuery.changeUserdata(userdata));
+
+        userdata.setBenutzername("RoxannePeters");
+        userdata.setPasswort(Hash.generatePasswordHash("RoxannePeters"));
+        Assertions.assertTrue(SQLQuery.changeUserdata(userdata));
     }
 
 }

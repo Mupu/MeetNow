@@ -37,6 +37,9 @@ class HashTest {
         for (Record r :
                 data) {
             originalPassword = r.get(PERSON.NACHNAME.as("orPassword"));
+            if (originalPassword.equals("Peters"))
+                originalPassword = "RoxannePeters";
+
             boolean isCorrect = Hash.validatePassword(originalPassword, r.get(BENUTZER.PASSWORT));
             System.out.println(originalPassword + ": " + isCorrect);
             Assertions.assertTrue(isCorrect);

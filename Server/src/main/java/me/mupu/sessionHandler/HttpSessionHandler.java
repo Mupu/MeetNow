@@ -54,11 +54,18 @@ public class HttpSessionHandler {
                 session.getCookies().read(COOKIE_USERNAME),
                 session.getCookies().read(COOKIE_PASSWORD));
 
+        // override / add connection type cookie
+        if (session.getCookies().read(COOKIE_CONNECTION_TYPE) == null || !session.getCookies().read(COOKIE_CONNECTION_TYPE).equals("desktop")) {
+            session.getCookies().set(new Cookie(COOKIE_CONNECTION_TYPE, "app", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_HTML;
+        } else {
+            session.getCookies().set(new Cookie(COOKIE_CONNECTION_TYPE, "desktop", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
+        }
+
 
         if (userdata != null) {
             // logged in
-
-            setCookies(session.getCookies());
 
             if (userdata.getAccountstatus().intValue() == 1 || session.getUri().toLowerCase().equals("/settings")) {
                 response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
@@ -77,6 +84,7 @@ public class HttpSessionHandler {
                         CONTENT_TYPE,
                         s);
                 }
+            setCookies(session.getCookies());
         } else {
             // failed to log in
             response = NanoHTTPD.newFixedLengthResponse(
@@ -89,15 +97,6 @@ public class HttpSessionHandler {
     }
 
     private void setCookies(CookieHandler cookieHandler) {
-        // override / add connection type cookie
-        if (cookieHandler.read(COOKIE_CONNECTION_TYPE) == null || !cookieHandler.read(COOKIE_CONNECTION_TYPE).equals("desktop")) {
-            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "app", Integer.MAX_VALUE));
-            CONTENT_TYPE = NanoHTTPD.MIME_HTML;
-        } else {
-            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "desktop", Integer.MAX_VALUE));
-            CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
-        }
-
         // override / add password cookie
         cookieHandler.set(new Cookie(COOKIE_PASSWORD, cookieHandler.read(COOKIE_PASSWORD), 60 * 60 * 24 * 2)
                 .setSecure(true)

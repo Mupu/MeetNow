@@ -9,6 +9,7 @@ import org.jooq.types.UInteger;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Arrays;
 
 import static jooq.Tables.*;
 
@@ -31,7 +32,7 @@ public class SQLQuery {
             Connection connection = DriverManager.getConnection(System.getProperty("url"), System.getProperty("user"), System.getProperty("password"));
             dslContext = DSL.using(connection, SQLDialect.MYSQL);
         } catch (Exception e) {
-            System.err.println("Connection could not be established");
+            System.err.println("Database-Connection could not be established");
             e.printStackTrace();
             System.exit(1);
         }
@@ -61,8 +62,22 @@ public class SQLQuery {
         return result;
     }
 
-    public static BenutzerRecord changeUserdata(final String name, final String password) {
-        return null;
+    /**
+     * Will perform an SQL "update" for the given record.
+     *
+     * @param changedRecord
+     * @return true if successful otherwise false
+     */
+    public static boolean changeUserdata(final BenutzerRecord changedRecord) {
+        if (!changedRecord.changed())
+            return false;
+
+        try {
+            if (Arrays.toString(getInstance().dslContext.batchUpdate(changedRecord).execute()).equals("[1]"))
+                return true;
+        } catch (Exception ignored) { }
+
+        return false;
     }
 
     public static Result<Record> getTermine(final int benutzerId) {

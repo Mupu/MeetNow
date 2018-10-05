@@ -5,6 +5,8 @@ import org.apache.http.client.CookieStore;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.impl.client.*;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.impl.cookie.BasicClientCookie2;
@@ -77,8 +79,8 @@ class ServerMainTest {
                 .build();
 
         // setup get request
-        HttpGet httpGet = new HttpGet(https_url);
-//        httpGet.addHeader("Content-Type", "text/plain");
+        HttpPut httpGet = new HttpPut(https_url);
+        httpGet.addHeader("Content-Type", "text/plain");
 
         // setup reponse handler
         HttpResponse response = client.execute(httpGet);

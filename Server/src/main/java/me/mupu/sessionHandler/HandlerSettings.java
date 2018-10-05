@@ -1,6 +1,7 @@
 package me.mupu.sessionHandler;
 
 import fi.iki.elonen.NanoHTTPD;
+import fi.iki.elonen.NanoHTTPD.Cookie;
 import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 import fi.iki.elonen.NanoHTTPD.Response;
 import fi.iki.elonen.NanoHTTPD.Response.Status;
@@ -8,6 +9,14 @@ import jooq.tables.records.BenutzerRecord;
 import lombok.NonNull;
 import me.mupu.Hash;
 import me.mupu.sql.SQLQuery;
+import org.jooq.types.UByte;
+
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import static me.mupu.sessionHandler.HttpSessionHandler.COOKIE_PASSWORD;
+import static me.mupu.sessionHandler.HttpSessionHandler.COOKIE_USERNAME;
 
 public class HandlerSettings implements RequestHandler {
     private static String COOKIE_RESET_USERNAME = "new_username";
@@ -38,11 +47,11 @@ public class HandlerSettings implements RequestHandler {
 
     /**
      * APP: Provides the html pages to change the username/password
-     *
+     * <p>
      * DESKTOP: Tells client to show "change username/password" window
      */
     private Response get(IHTTPSession session, BenutzerRecord userdata) {
-        Response response = null;
+        Response response;
 
         if (userdata.getAccountstatus().intValue() == 1) {
             // user wants to change data
@@ -51,7 +60,16 @@ public class HandlerSettings implements RequestHandler {
                 // client app shouldnt use this site. it should only use put
             } else {
                 // uses web
-                //todo display input box for password and name. ok button sends put request to change data
+                String s = "didnt work";
+                try {
+                    byte[] encoded = Files.readAllBytes(Paths.get("src/main/resources/me/mupu/sessionHandler/html/Settings.html"));
+                    s = new String(encoded, StandardCharsets.UTF_8);
+                } catch (Exception ignored) {
+                }
+                return NanoHTTPD.newFixedLengthResponse(
+                        NanoHTTPD.Response.Status.OK,
+                        HttpSessionHandler.CONTENT_TYPE,
+                        s);
             }
         } else {
             // first login user has to change data
@@ -61,8 +79,16 @@ public class HandlerSettings implements RequestHandler {
                 //todo on completing it it should send put request
             } else {
                 // uses web
-                //todo same window as for change user stat but with an extra lable
-                // todo that says you have to change your username and login
+                String s = "didnt work";
+                try {
+                    byte[] encoded = Files.readAllBytes(Paths.get("src/main/resources/me/mupu/sessionHandler/html/Login.html"));
+                    s = new String(encoded, StandardCharsets.UTF_8);
+                } catch (Exception ignored) {
+                }
+                return NanoHTTPD.newFixedLengthResponse(
+                        NanoHTTPD.Response.Status.OK,
+                        HttpSessionHandler.CONTENT_TYPE,
+                        s);
             }
         }
 
@@ -74,7 +100,7 @@ public class HandlerSettings implements RequestHandler {
     /**
      * APP: Will update userdata in database.
      * Also provides a 'succesfully changed data' data html page
-     *
+     * <p>
      * DESKTOP: Will update userdata in database
      */
     private Response put(IHTTPSession session, BenutzerRecord userdata) {
@@ -86,16 +112,27 @@ public class HandlerSettings implements RequestHandler {
 
                 userdata.setBenutzername(session.getCookies().read(COOKIE_RESET_USERNAME));
                 userdata.setPasswort(Hash.generatePasswordHash(session.getCookies().read(COOKIE_RESET_USERNAME)));
+                userdata.setAccountstatus(UByte.valueOf(1));
                 if (SQLQuery.changeUserdata(userdata)) {
+                    session.getCookies().set(new Cookie(COOKIE_USERNAME,
+                                    session.getCookies().read(COOKIE_RESET_USERNAME), 60 * 60 * 24 * 2)
+                                    .setSecure(true)
+                                    .setSameSite("Strict"));
+                    session.getCookies().set(new Cookie(COOKIE_PASSWORD,
+                                    session.getCookies().read(COOKIE_RESET_PASSWORD), 60 * 60 * 24 * 2)
+                                    .setSecure(true)
+                                    .setSameSite("Strict"));
+
                     session.getCookies().delete(COOKIE_RESET_USERNAME);
                     session.getCookies().delete(COOKIE_RESET_PASSWORD);
 
-                    return NanoHTTPD.newFixedLengthResponse(
+                    Response r = NanoHTTPD.newFixedLengthResponse(
                             Status.OK,
                             HttpSessionHandler.CONTENT_TYPE,
-                            userdata.toString()
-                    );
+                            userdata.toString());
+                    session.getCookies().unloadQueue(r);
 
+                    return r;
                 }
             }
         } catch (Exception ignored) {

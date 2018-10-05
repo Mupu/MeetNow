@@ -35,13 +35,14 @@ public class HttpSessionHandler {
         // default handler
         context = new Mapper<>(new HandlerContextNotFound());
         context.setAttribute("/settings", new HandlerSettings());
-        context.setAttribute("/ausleihe/", new HandlerAusleihe());
-        context.setAttribute("/ausstattungsgegenstand/", new HandlerAusstattungsgegenstand());
-        context.setAttribute("/benutzer/", new HandlerBenutzer());
-        context.setAttribute("/besprechung/", new HandlerBesprechung());
-        context.setAttribute("/person/", new HandlerPerson());
-        context.setAttribute("/raum/", new HandlerRaum());
-        context.setAttribute("/teilnahme/", new HandlerTeilnahme());
+        context.setAttribute("/login", new HandlerLogin());
+        context.setAttribute("/ausleihe", new HandlerAusleihe());
+        context.setAttribute("/ausstattungsgegenstand", new HandlerAusstattungsgegenstand());
+        context.setAttribute("/benutzer", new HandlerBenutzer());
+        context.setAttribute("/besprechung", new HandlerBesprechung());
+        context.setAttribute("/person", new HandlerPerson());
+        context.setAttribute("/raum", new HandlerRaum());
+        context.setAttribute("/teilnahme", new HandlerTeilnahme());
     }
 
     public Response handle(IHTTPSession session) {
@@ -68,6 +69,7 @@ public class HttpSessionHandler {
             // logged in
 
             if (userdata.getAccountstatus().intValue() == 1 || session.getUri().toLowerCase().equals("/settings")) {
+                setCookies(session.getCookies());
                 response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
             } else {
                 // force user to change name and password
@@ -83,14 +85,21 @@ public class HttpSessionHandler {
                         Response.Status.TEMPORARY_REDIRECT,
                         CONTENT_TYPE,
                         s);
-                }
-            setCookies(session.getCookies());
+//                setCookies(session.getCookies());
+            }
         } else {
+            session.getCookies().delete(COOKIE_USERNAME);
+            session.getCookies().delete(COOKIE_PASSWORD);
             // failed to log in
-            response = NanoHTTPD.newFixedLengthResponse(
-                    Response.Status.UNAUTHORIZED,
-                    CONTENT_TYPE,
-                    "Wrong username or password.");
+            if (!session.getUri().toLowerCase().equals("/login"))
+                response = NanoHTTPD.newFixedLengthResponse(
+                        Response.Status.UNAUTHORIZED,
+                        CONTENT_TYPE,
+                        "<head><meta http-equiv=\"refresh\" content=\"0; URL=https://"
+                                + session.getHeaders().get("host")
+                                + "/login\" /></head>");
+            else
+                response = instance.context.getAttribute(session.getUri().toLowerCase()).handle(session, userdata);
         }
 
         return response;
@@ -100,14 +109,12 @@ public class HttpSessionHandler {
         // override / add password cookie
         cookieHandler.set(new Cookie(COOKIE_PASSWORD, cookieHandler.read(COOKIE_PASSWORD), 60 * 60 * 24 * 2)
                 .setSecure(true)
-                .setHttpOnly(true)
                 .setSameSite("Strict")
         );
 
         // override / add user cookie
         cookieHandler.set(new Cookie(COOKIE_USERNAME, cookieHandler.read(COOKIE_USERNAME), 60 * 60 * 24 * 2)
                 .setSecure(true)
-                .setHttpOnly(true)
                 .setSameSite("Strict")
         );
     }

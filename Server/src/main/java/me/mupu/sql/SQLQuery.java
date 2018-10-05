@@ -1,6 +1,8 @@
 package me.mupu.sql;
 
 import jooq.tables.records.BenutzerRecord;
+import jooq.tables.records.BesprechungRecord;
+import jooq.tables.records.TeilnahmeRecord;
 import lombok.NonNull;
 import me.mupu.Hash;
 import org.jooq.*;
@@ -65,10 +67,9 @@ public class SQLQuery {
     /**
      * Will perform an SQL "update" for the given record.
      *
-     * @param changedRecord
      * @return true if successful otherwise false
      */
-    public static boolean changeUserdata(final BenutzerRecord changedRecord) {
+    public static boolean changeUserdata(@NonNull final BenutzerRecord changedRecord) {
         if (!changedRecord.changed())
             return false;
 
@@ -80,8 +81,10 @@ public class SQLQuery {
         return false;
     }
 
+    /**
+     * Returns all appointments for the given urserID
+     */
     public static Result<Record> getTermine(final int benutzerId) {
-
         Result<Record> result = null;
         try {
             result = getInstance().dslContext
@@ -97,8 +100,56 @@ public class SQLQuery {
         return result;
     }
 
+    public static boolean addUserToTermin(final BenutzerRecord caller, final int besprechungId, final int userIdToAdd) {
+        try {
+            BesprechungRecord besprechung = getInstance().dslContext
+                    .selectFrom(BESPRECHUNG)
+                    .where(BESPRECHUNG.BESITZERID.eq(caller.getBenutzerid()))
+                    .and(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId)))
+                    .fetchSingle();
+
+            getInstance().dslContext
+                    .insertInto(TEILNAHME)
+                    .values(getInstance().dslContext    //check if user exists
+                            .selectFrom(BENUTZER)
+                            .where(BENUTZER.BENUTZERID.eq(UInteger.valueOf(userIdToAdd)))
+                            .fetchSingle().getBenutzerid()
+                            , besprechung.getBesprechungid())
+                    .execute();
+            return true;
+        } catch (Exception ignored) {
+//            ignored.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean deleteUserFromTermin(final BenutzerRecord caller, final int besprechungId, final int userIdToRemove) {
+        try {
+            BesprechungRecord besprechung = getInstance().dslContext
+                    .selectFrom(BESPRECHUNG)
+                    .where(BESPRECHUNG.BESITZERID.eq(caller.getBenutzerid()))
+                    .and(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId)))
+                    .fetchSingle();
+
+            getInstance().dslContext
+                    .deleteFrom(TEILNAHME)
+                    .where(TEILNAHME.BENUTZERID.eq(
+                            getInstance().dslContext    //check if user exists
+                                    .selectFrom(BENUTZER)
+                                    .where(BENUTZER.BENUTZERID.eq(UInteger.valueOf(userIdToRemove)))
+                                    .fetchSingle()
+                                    .getBenutzerid()))
+                            .and(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                    .execute();
+            return true;
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
+        }
+        return false;
+    }
+
     public static Result<Record> getPersonen() {
-        Result result = null;
+        Result<Record> result = null;
         try {
             result = getInstance().dslContext.select().from(PERSON).fetch();
         } catch (Exception e) {
@@ -108,7 +159,7 @@ public class SQLQuery {
     }
 
     public static Result<Record> getRaume() {
-        Result result = null;
+        Result<Record> result = null;
         try {
             result = getInstance().dslContext.select().from(RAUM).fetch();
         } catch (Exception e) {
@@ -118,7 +169,7 @@ public class SQLQuery {
     }
 
     public static Result<Record> getAusstattungsgegenstande() {
-        Result result = null;
+        Result<Record> result = null;
         try {
             result = getInstance().dslContext.select().from(AUSSTATTUNGSGEGENSTAND).fetch();
         } catch (Exception e) {

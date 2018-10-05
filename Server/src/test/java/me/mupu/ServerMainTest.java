@@ -45,7 +45,7 @@ class ServerMainTest {
 
     @Test
     void testConnectionAndGetReqeuest() throws Exception {
-        String https_url = "https://localhost:7327/teilnahme/?pete=ja%20&%20olo=4";
+        String https_url = "https://localhost:7327/teilnahme?pete=ja%20&%20olo=4";
 
         // disable certificate check
         SSLContext sslContext = new SSLContextBuilder()

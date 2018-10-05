@@ -4,6 +4,7 @@ import jooq.tables.records.BenutzerRecord;
 import me.mupu.Hash;
 import org.jooq.Record;
 import org.jooq.Result;
+import org.jooq.types.UInteger;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -49,6 +50,23 @@ public class SQLQueryTests {
         userdata.setBenutzername("RoxannePeters");
         userdata.setPasswort(Hash.generatePasswordHash("RoxannePeters"));
         Assertions.assertTrue(SQLQuery.changeUserdata(userdata));
+    }
+
+    @Test
+    void TestAddAndDeleteUserToAndFromTermin() {
+        BenutzerRecord caller = new BenutzerRecord();
+        caller.setBenutzerid(UInteger.valueOf(9));
+
+        Assertions.assertTrue(SQLQuery.addUserToTermin(caller, 2, 4));
+
+        Assertions.assertFalse(SQLQuery.addUserToTermin(caller, 2, 4));
+
+        Assertions.assertTrue(SQLQuery.deleteUserFromTermin(caller, 2, 4));
+
+        Assertions.assertTrue(SQLQuery.deleteUserFromTermin(caller, 2, 4));
+
+
+
     }
 
 }

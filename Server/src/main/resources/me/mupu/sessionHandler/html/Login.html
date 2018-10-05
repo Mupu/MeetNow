@@ -1,0 +1,58 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            function setCookies() {
+                var d = new Date();
+                d.setTime(d.getTime() + (2*24*60*60*1000));
+                var expires = "expires=" + d.toGMTString();
+
+                var inputUsername = document.getElementById("username").value;
+                var inputPassword = document.getElementById("password").value;
+
+                document.cookie = "username=" + inputUsername + ";" + expires + ";path=/ ;secure ;SameSite=Strict";
+                document.cookie = "password=" + inputPassword + ";" + expires + ";path=/ ;secure ;SameSite=Strict";
+            }
+
+            function getCookie(cname) {
+                var name = cname + "=";
+                var ca = document.cookie.split(';');
+                for(var i = 0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0) == ' ') {
+                        c = c.substring(1);
+                    }
+                    if (c.indexOf(name) == 0) {
+                        return c.substring(name.length, c.length);
+                    }
+                }
+                return "";
+            }
+
+            function checkCookie() {
+                var username = getCookie("username");
+                if (username != "") {
+                    window.location.href = "https://" + window.location.host + "/teilnahme";
+                    alert("You're already loggin as " + username);
+                } else {
+                    setCookies();
+                    window.location.href = "https://" + window.location.host + "/teilnahme";
+                }
+            }
+        </script>
+    </head>
+    <body>
+        <form>
+            <div class="container">
+                <label><b>Username</b></label>
+                <input type="text" placeholder="Enter Username" id="username" required>
+
+                <label><b>Password</b></label>
+                <input type="password" placeholder="Enter Password" id="password" required>
+
+                <button type="button" onclick="checkCookie()">
+                    Login
+                </button>
+            </div>
+        </form>
+    </body>
+</html>

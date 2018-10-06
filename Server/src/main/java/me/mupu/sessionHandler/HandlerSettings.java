@@ -111,7 +111,7 @@ public class HandlerSettings implements RequestHandler {
                     && session.getCookies().read(COOKIE_RESET_USERNAME) != null) {
 
                 userdata.setBenutzername(session.getCookies().read(COOKIE_RESET_USERNAME));
-                userdata.setPasswort(Hash.generatePasswordHash(session.getCookies().read(COOKIE_RESET_USERNAME)));
+                userdata.setPasswort(Hash.generatePasswordHash(session.getCookies().read(COOKIE_RESET_PASSWORD)));
                 userdata.setAccountstatus(UByte.valueOf(1));
                 if (SQLQuery.changeUserdata(userdata)) {
                     session.getCookies().set(new Cookie(COOKIE_USERNAME,

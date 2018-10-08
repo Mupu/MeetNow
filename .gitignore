@@ -24,6 +24,7 @@ out/
 /.nb-gradle/
 
 # Gradle
+.gradle/
 .gradletasknamecache
 gradle-app.setting
 !gradle-wrapper.jar

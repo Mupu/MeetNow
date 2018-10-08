@@ -47,23 +47,19 @@ public class HttpSessionHandler {
 
     public Response handle(IHTTPSession session) {
         if (instance == null) instance = new HttpSessionHandler();
+
         System.out.println(debugString(session));
 
-        Response response;
 
+        setupContentTypeForSession(session.getCookies());
+
+        // try to login user
         BenutzerRecord userdata = SQLQuery.checkLogin(
                 session.getCookies().read(COOKIE_USERNAME),
                 session.getCookies().read(COOKIE_PASSWORD));
 
-        // override / add connection type cookie
-        if (session.getCookies().read(COOKIE_CONNECTION_TYPE) == null || !session.getCookies().read(COOKIE_CONNECTION_TYPE).equals("desktop")) {
-            session.getCookies().set(new Cookie(COOKIE_CONNECTION_TYPE, "app", Integer.MAX_VALUE));
-            CONTENT_TYPE = NanoHTTPD.MIME_HTML;
-        } else {
-            session.getCookies().set(new Cookie(COOKIE_CONNECTION_TYPE, "desktop", Integer.MAX_VALUE));
-            CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
-        }
 
+        Response response;
 
         if (userdata != null) {
             // logged in
@@ -117,6 +113,17 @@ public class HttpSessionHandler {
                 .setSecure(true)
                 .setSameSite("Strict")
         );
+    }
+
+    private void setupContentTypeForSession(CookieHandler cookieHandler) {
+        // override / add connection type cookie
+        if (cookieHandler.read(COOKIE_CONNECTION_TYPE) == null || !cookieHandler.read(COOKIE_CONNECTION_TYPE).equals("desktop")) {
+            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "app", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_HTML;
+        } else {
+            cookieHandler.set(new Cookie(COOKIE_CONNECTION_TYPE, "desktop", Integer.MAX_VALUE));
+            CONTENT_TYPE = NanoHTTPD.MIME_PLAINTEXT;
+        }
     }
 
     private String debugString(IHTTPSession session) {

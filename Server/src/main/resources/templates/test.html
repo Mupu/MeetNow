@@ -1,0 +1,18 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Login Page</title></head>
+<body>
+<table>
+    <th:block th:each="user : ${sql}">
+        <tr>
+            <td th:text="${user.getAusstattungsgegenstandid()}">...</td>
+            <td th:text="${user.getName()}">...</td>
+        </tr>
+        <tr>
+            <td colspan="2" th:text="${user.getAnzahl()}">...</td>
+        </tr>
+    </th:block>
+<p th:text="'Hello, ' + ${sql} + '!'"></p>
+</table>
+</body>
+</html>

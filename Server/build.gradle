@@ -1,87 +1,87 @@
-plugins {
-    id 'java'
-    id 'nu.studer.jooq' version '3.0.2'
-    id 'application'
+buildscript {
+	ext {
+		springBootVersion = '2.0.5.RELEASE'
+
+//        dbDriver = "com.mysql.cj.jdbc.Driver"
+        dbDriver = "com.mysql.jdbc.Driver"
+        dbUrl = "jdbc:mysql://192.168.2.119:3306/meetnow"
+        dbUser = "mupu"
+        dbPassword = "mupu"
+
+	}
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
 }
 
-group 'me.mupu'
-version 'Server-1.0-SNAPSHOT'
+plugins {
+    id 'nu.studer.jooq' version '3.0.2'
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+
+group = 'me.mupu'
+version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
-//run the properties.gradle script
-apply from: 'properties.gradle'
-
 repositories {
-    mavenLocal()
-    mavenCentral()
+	mavenCentral()
 }
+
 
 dependencies {
-    testCompile 'org.junit.jupiter:junit-jupiter-api:5.3.1'
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.1.0'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.1.0'
+	implementation('org.springframework.boot:spring-boot-starter-jooq')
+	implementation('org.springframework.boot:spring-boot-starter-web')
+	implementation('org.springframework.boot:spring-boot-starter-security')
+	implementation('org.springframework.boot:spring-boot-starter-thymeleaf')
+	implementation('org.springframework.boot:spring-boot-devtools')
 
-    jooqRuntime 'mysql:mysql-connector-java:8.0.12'
-    implementation 'org.jooq:jooq:3.11.5'
-    implementation 'org.jooq:jooq-meta:3.11.5'
+	implementation('mysql:mysql-connector-java')
+
     implementation 'org.jooq:jooq-codegen:3.11.5'
-    implementation 'mysql:mysql-connector-java:8.0.12'
-    implementation 'org.apache.httpcomponents:httpclient:4.5.6'
-    implementation 'org.projectlombok:lombok:1.18.2'
-    implementation 'org.json:json:20180813'
+
+    jooqRuntime 'mysql:mysql-connector-java'
+	compileOnly('org.projectlombok:lombok')
+	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
+
+// overwrite springboots version
+ext['jooq.version'] = '3.11.5'
 
 jooq {
     version = '3.11.5'
-    sample(sourceSets.main) {
-        jdbc {
-            user = puser
-            password = ppassword
-            url = purl
-            driver = pdriver
-        }
-        generator {
-            database {
-                name = 'org.jooq.meta.mysql.MySQLDatabase'
-                inputSchema = pdatabaseName
-            }
-            target {
-                packageName = 'jooq'
-            }
-        }
-    }
-}
-
-task runMain(type: JavaExec) {
-    classpath sourceSets.main.runtimeClasspath
-    main = "me.mupu.ServerMain"
-}
-
-tasks.withType(JavaExec) {
-    // Assign all Java system properties from
-    // the command line to the JavaExec task.
-    System.setProperty("user", "$puser")
-    System.setProperty("password", "$ppassword")
-    System.setProperty("url", "$purl")
-    System.setProperty("driver", "$pdriver")
-    systemProperties System.getProperties().subMap(["user","password","url","driver"])
-}
-
-tasks.withType(Test) {
-    // Assign all Java system properties from
-    // the command line to the JavaExec task.
-    System.setProperty("user", "$puser")
-    System.setProperty("password", "$ppassword")
-    System.setProperty("url", "$purl")
-    System.setProperty("driver", "$pdriver")
-    systemProperties System.getProperties().subMap(["user","password","url","driver"])
-}
-
-test {
-    useJUnitPlatform {
-        excludeTags 'slow'
-        includeEngines 'junit-jupiter', 'junit-vintage'
-    }
-
-    failFast = false
+	meetnow(sourceSets.main) {
+		jdbc {
+			driver = "${dbDriver}"
+			url = "${dbUrl}"
+			user = "${dbUser}"
+			password = "${dbPassword}"
+		}
+		generator {
+			database {
+				name = 'org.jooq.meta.mysql.MySQLDatabase'
+				inputSchema = 'meetnow'
+			}
+			generate {
+				relations = true
+				deprecated = false
+				records = true
+				immutablePojos = false
+				fluentSetters = true
+			}
+			target {
+				directory = 'src/main/generated/java'
+			}
+		}
+	}
 }

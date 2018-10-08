@@ -12,13 +12,23 @@
 out/
 *.iml
 *.iws
+*.ipr
 *.MF
+
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
 # Gradle
 .gradletasknamecache
 gradle-app.setting
 !gradle-wrapper.jar
 build/
+!gradle/wrapper/gradle-wrapper.jar
 out/
 
 # Mobile Tools for Java (J2ME)
@@ -35,3 +45,12 @@ out/
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache

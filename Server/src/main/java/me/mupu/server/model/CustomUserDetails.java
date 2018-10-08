@@ -1,25 +1,24 @@
 package me.mupu.server.model;
 
+import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.BenutzerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.HashSet;
 
 public class CustomUserDetails implements UserDetails {
 
     private final BenutzerRecord userdata;
-    public CustomUserDetails(BenutzerRecord userdata) {
+    private final Collection<GrantedAuthority> collection;
+    public CustomUserDetails(BenutzerRecord userdata, Collection<GrantedAuthority> collection) {
         this.userdata = userdata;
+        this.collection = collection;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> collection = new HashSet<>();
-        collection.add(new SimpleGrantedAuthority("ROLE_" + (userdata.getRechte().byteValue() == 1 ? "ADMIN" : "USER")));
-        collection.forEach(System.out::println);
         return collection;
     }
 
@@ -45,11 +44,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true;
+        return userdata.getAccountstatus().byteValue() == 1;
     }
 
     @Override
     public boolean isEnabled() {
         return true;
     }
+
 }

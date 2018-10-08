@@ -19,6 +19,10 @@ insert into ausstattungsgegenstand (name, anzahl) values ("Beamer", 2);
 insert into ausstattungsgegenstand (name, anzahl) values ("Stifftpaket", 10);
 insert into ausstattungsgegenstand (name, anzahl) values ("Lautsprecher", 6);
 
+insert into role (name) values ("USER");
+insert into role (name) values ("ADMIN");
+insert into role (name) values ("SUPERADMIN");
+
 insert into benutzer (personId, benutzername, `passwort`, accountstatus, rechte) values (1, "Hans", "12345:dd3f1660ff3df7d267fe70f565c0f109:c21c45e3523f86499f8f5f706ae5fd26cff393cc7d8f98a051630650bc523b96acb80eed57ae697b74b7507c0bcf03b8ea052ca5d4b6951f4ce3bfe2580baa9f43393d5bd7929b6d8bc259e5ca0aa63363b9cbcaf6bc887b87772a6a103115d5c7894927f1f8734c708a296fbb0ae275a4fc1989be0307a97f5616bc81417ff7120301651de40f08fc4ca07d80c41fe928f7cfb7ffdff068630451032308edcab93f7b748e45422e8aeeb3a4da48d7b16eb0a69dd1969a5dd881dc1096912d9703f448ff57cfd7b30a46c5107ef021ddce12899bb9954ca2e1273e9eab4754492f49b7bf8c46e8e546dc2fde617f9774842a97c78273555891325dc416ce550a", 1, 0);
 insert into benutzer (personId, benutzername, `passwort`, accountstatus, rechte) values (2, "Peter", "12345:972d23497f7e22d1cb9da60cf45510fb:7a13ad98a812e738acd1dc9c4738159daa84be842a5e18d3d2415d17d069315185f26bac747cb7b15970bac5896cea456b64c3440ee0cedbc29b4b4710069b3e866dbc80ea0e0eb840427ea1bb78e043816844c4913c438710873f5805f09ae8c6822acb25c152e196697f71564382e8465cbdef41afa63ce1d7dbba0dabb4fedfe21dba6a10efd6b99acc694f87b11428cbb0021636436f3f8ff727e44b03f8a79afb1b64efa54e72624c16ce4cd5191778a3eca2f707ed3170f02476ee7e81c59cfafc8669ba304db89dfee313d3f9ba62b5e3dfd5f604cd894dbdbc65a613b74439322693c55cb98c2bbf7213540167d8fee77353b3a42eca069ec9e513e2", 1, 0);
 insert into benutzer (personId, benutzername, `passwort`, accountstatus, rechte) values (3, "Alex", "12345:e33eb273629626913a809244d98872f9:a048332bb58910b062c986565d3529a3fd751504bc11e1a7c3b36022e8fdf48a5652ed3451c3761910312d05ad5a7f5cfbc6361eeb69dabab9322748387ee52739fe68ea7d1bec8659c0d7ca8d0fe28a41e17bf156c73f649d802f392607e604a0e1d7b3c3bc0460e2f66300a2a34c6090e34e1838144103339306649496a46aa16f728b02e6ad42e47df3f83a705db8ca63ef0ae3afeefff07ffd55598252047f54dbbf4b72dc3bbc7a9b1e6c7b42c375cf5acf9ba3aaf62bc9f07c20b01cc9dd1bebdccc873cd45b40f58440a6fdbd88959fb00bdd2631e5c6ac8cce9427a269f6c6e40eefa1b42d8fc194800caceec3e108dc8cb4be221980809cd3cab5bd", 1, 1);
@@ -50,3 +54,17 @@ insert into teilnahme values (10, 2);
 insert into teilnahme values (6, 3);
 insert into teilnahme values (5, 3);
 insert into teilnahme values (9, 3);
+
+insert into user_role values (3,1);
+insert into user_role values (3,2);
+insert into user_role values (3,3);
+
+insert into user_role values (1,1);
+insert into user_role values (2,1);
+insert into user_role values (4,1);
+insert into user_role values (5,1);
+insert into user_role values (6,1);
+insert into user_role values (7,1);
+insert into user_role values (8,1);
+insert into user_role values (9,1);
+insert into user_role values (10,1);

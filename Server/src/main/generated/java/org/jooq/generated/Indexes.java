@@ -14,7 +14,9 @@ import org.jooq.generated.tables.Benutzer;
 import org.jooq.generated.tables.Besprechung;
 import org.jooq.generated.tables.Person;
 import org.jooq.generated.tables.Raum;
+import org.jooq.generated.tables.Role;
 import org.jooq.generated.tables.Teilnahme;
+import org.jooq.generated.tables.UserRole;
 import org.jooq.impl.Internal;
 
 
@@ -47,9 +49,13 @@ public class Indexes {
     public static final Index BESPRECHUNG_PRIMARY = Indexes0.BESPRECHUNG_PRIMARY;
     public static final Index PERSON_PRIMARY = Indexes0.PERSON_PRIMARY;
     public static final Index RAUM_PRIMARY = Indexes0.RAUM_PRIMARY;
+    public static final Index ROLE_PRIMARY = Indexes0.ROLE_PRIMARY;
     public static final Index TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX1 = Indexes0.TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX1;
     public static final Index TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX2 = Indexes0.TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX2;
     public static final Index TEILNAHME_PRIMARY = Indexes0.TEILNAHME_PRIMARY;
+    public static final Index USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX1 = Indexes0.USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX1;
+    public static final Index USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX2 = Indexes0.USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX2;
+    public static final Index USER_ROLE_PRIMARY = Indexes0.USER_ROLE_PRIMARY;
 
     // -------------------------------------------------------------------------
     // [#1459] distribute members to avoid static initialisers > 64kb
@@ -68,8 +74,12 @@ public class Indexes {
         public static Index BESPRECHUNG_PRIMARY = Internal.createIndex("PRIMARY", Besprechung.BESPRECHUNG, new OrderField[] { Besprechung.BESPRECHUNG.BESPRECHUNGID }, true);
         public static Index PERSON_PRIMARY = Internal.createIndex("PRIMARY", Person.PERSON, new OrderField[] { Person.PERSON.PERSONID }, true);
         public static Index RAUM_PRIMARY = Internal.createIndex("PRIMARY", Raum.RAUM, new OrderField[] { Raum.RAUM.RAUMID }, true);
+        public static Index ROLE_PRIMARY = Internal.createIndex("PRIMARY", Role.ROLE, new OrderField[] { Role.ROLE.ROLEID }, true);
         public static Index TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX1 = Internal.createIndex("Benutzer_has_Besprechung_FKIndex1", Teilnahme.TEILNAHME, new OrderField[] { Teilnahme.TEILNAHME.BENUTZERID }, false);
         public static Index TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX2 = Internal.createIndex("Benutzer_has_Besprechung_FKIndex2", Teilnahme.TEILNAHME, new OrderField[] { Teilnahme.TEILNAHME.BESPRECHUNGID }, false);
         public static Index TEILNAHME_PRIMARY = Internal.createIndex("PRIMARY", Teilnahme.TEILNAHME, new OrderField[] { Teilnahme.TEILNAHME.BENUTZERID, Teilnahme.TEILNAHME.BESPRECHUNGID }, true);
+        public static Index USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX1 = Internal.createIndex("Benutzer_has_Role_FKIndex1", UserRole.USER_ROLE, new OrderField[] { UserRole.USER_ROLE.BENUTZERID }, false);
+        public static Index USER_ROLE_BENUTZER_HAS_ROLE_FKINDEX2 = Internal.createIndex("Benutzer_has_Role_FKIndex2", UserRole.USER_ROLE, new OrderField[] { UserRole.USER_ROLE.ROLEID }, false);
+        public static Index USER_ROLE_PRIMARY = Internal.createIndex("PRIMARY", UserRole.USER_ROLE, new OrderField[] { UserRole.USER_ROLE.BENUTZERID, UserRole.USER_ROLE.ROLEID }, true);
     }
 }

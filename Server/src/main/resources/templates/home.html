@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity3" lang="en">
 <head>
     <meta charset="UTF-8">
     <title>HOME</title>
 </head>
 <body>
 <h1>HOME</h1>
+<label th:text="${_csrf.parameterName}"></label>
+<label th:text="${_csrf.token}"></label>
 </body>
 </html>

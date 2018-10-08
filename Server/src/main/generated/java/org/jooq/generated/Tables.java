@@ -12,7 +12,9 @@ import org.jooq.generated.tables.Benutzer;
 import org.jooq.generated.tables.Besprechung;
 import org.jooq.generated.tables.Person;
 import org.jooq.generated.tables.Raum;
+import org.jooq.generated.tables.Role;
 import org.jooq.generated.tables.Teilnahme;
+import org.jooq.generated.tables.UserRole;
 
 
 /**
@@ -59,7 +61,17 @@ public class Tables {
     public static final Raum RAUM = org.jooq.generated.tables.Raum.RAUM;
 
     /**
+     * The table <code>meetnow.role</code>.
+     */
+    public static final Role ROLE = org.jooq.generated.tables.Role.ROLE;
+
+    /**
      * The table <code>meetnow.teilnahme</code>.
      */
     public static final Teilnahme TEILNAHME = org.jooq.generated.tables.Teilnahme.TEILNAHME;
+
+    /**
+     * The table <code>meetnow.user_role</code>.
+     */
+    public static final UserRole USER_ROLE = org.jooq.generated.tables.UserRole.USER_ROLE;
 }

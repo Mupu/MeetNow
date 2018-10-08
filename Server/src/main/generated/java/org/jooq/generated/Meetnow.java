@@ -18,7 +18,9 @@ import org.jooq.generated.tables.Benutzer;
 import org.jooq.generated.tables.Besprechung;
 import org.jooq.generated.tables.Person;
 import org.jooq.generated.tables.Raum;
+import org.jooq.generated.tables.Role;
 import org.jooq.generated.tables.Teilnahme;
+import org.jooq.generated.tables.UserRole;
 import org.jooq.impl.SchemaImpl;
 
 
@@ -35,7 +37,7 @@ import org.jooq.impl.SchemaImpl;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Meetnow extends SchemaImpl {
 
-    private static final long serialVersionUID = 268519050;
+    private static final long serialVersionUID = 599126282;
 
     /**
      * The reference instance of <code>meetnow</code>
@@ -73,9 +75,19 @@ public class Meetnow extends SchemaImpl {
     public final Raum RAUM = org.jooq.generated.tables.Raum.RAUM;
 
     /**
+     * The table <code>meetnow.role</code>.
+     */
+    public final Role ROLE = org.jooq.generated.tables.Role.ROLE;
+
+    /**
      * The table <code>meetnow.teilnahme</code>.
      */
     public final Teilnahme TEILNAHME = org.jooq.generated.tables.Teilnahme.TEILNAHME;
+
+    /**
+     * The table <code>meetnow.user_role</code>.
+     */
+    public final UserRole USER_ROLE = org.jooq.generated.tables.UserRole.USER_ROLE;
 
     /**
      * No further instances allowed
@@ -108,6 +120,8 @@ public class Meetnow extends SchemaImpl {
             Besprechung.BESPRECHUNG,
             Person.PERSON,
             Raum.RAUM,
-            Teilnahme.TEILNAHME);
+            Role.ROLE,
+            Teilnahme.TEILNAHME,
+            UserRole.USER_ROLE);
     }
 }

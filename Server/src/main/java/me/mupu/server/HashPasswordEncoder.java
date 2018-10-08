@@ -51,22 +51,6 @@ public class HashPasswordEncoder implements PasswordEncoder {
         return "ERROR_WHILE_ENCODING";
     }
 
-    public String encode(String rawPassword) {
-        try {
-            int iterations = 12345;
-            char[] chars = rawPassword.toString().toCharArray();
-            byte[] salt = getSalt();
-
-            PBEKeySpec spec = new PBEKeySpec(chars, salt, iterations, 64 * 32);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] hash = skf.generateSecret(spec).getEncoded();
-            return iterations + ":" + toHex(salt) + ":" + toHex(hash);
-        } catch (Exception ignored) {}
-        logger.fatal("ERROR_WHILE_ENCODING");
-        System.err.println("ERROR_WHILE_ENCODING");
-        return "ERROR_WHILE_ENCODING";
-    }
-
     private static byte[] fromHex(String hex) {
         byte[] bytes = new byte[hex.length() / 2];
         for (int i = 0; i < bytes.length; i++) {
@@ -77,28 +61,6 @@ public class HashPasswordEncoder implements PasswordEncoder {
 
     @Override
     public boolean matches(CharSequence rawPassword, String encodedPassword) {
-        try {
-            String[] parts = encodedPassword.split(":");
-            int iterations = Integer.parseInt(parts[0]);
-            byte[] salt = fromHex(parts[1]);
-            byte[] hash = fromHex(parts[2]);
-
-            PBEKeySpec spec = new PBEKeySpec(rawPassword.toString().toCharArray(), salt, iterations, hash.length * 8);
-            SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-            byte[] testHash = skf.generateSecret(spec).getEncoded();
-
-            int diff = hash.length ^ testHash.length;
-            for (int i = 0; i < hash.length && i < testHash.length; i++) {
-                diff |= hash[i] ^ testHash[i];
-            }
-            return diff == 0;
-        } catch (Exception ignored) {}
-        logger.fatal("ERROR_WHILE_ENCODING");
-        System.err.println("ERROR_WHILE_ENCODING");
-        return false;
-    }
-
-    public boolean matches(String rawPassword, String encodedPassword) {
         try {
             String[] parts = encodedPassword.split(":");
             int iterations = Integer.parseInt(parts[0]);

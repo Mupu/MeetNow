@@ -12,8 +12,6 @@ import org.springframework.web.servlet.ModelAndView;
 import javax.annotation.security.RolesAllowed;
 
 @Controller
-@RolesAllowed({"USER", "ADMIN"})
-//@Secured({"ROLE_USER", "ROLE_ADMIN"})
 public class TestController {
     
 
@@ -21,11 +19,7 @@ public class TestController {
     AusstattungsgegenstandRepository repo;
 
     @RequestMapping("/test")
-    public ModelAndView test(@RequestParam(required = false, name = "name") String name,
-                              @RequestParam(required = false, name = "anzahl") Integer anzahl) {
-
-//        repo.saveGegenstand(name, anzahl);
-
+    public ModelAndView test() {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("test");
         mv.addObject("sql", repo.getAll());
@@ -36,7 +30,6 @@ public class TestController {
     @RequestMapping("/admin")
     @Secured("ROLE_ADMIN")
     public ModelAndView admin() {
-
         ModelAndView mv = new ModelAndView();
         mv.setViewName("admin");
 
@@ -45,18 +38,16 @@ public class TestController {
 
     @RequestMapping(value = {"/", "/home"})
     public ModelAndView home() {
-
         ModelAndView mv = new ModelAndView();
         mv.setViewName("home");
 
         return mv;
     }
 
-    @RequestMapping("/loggedout")
-    public ModelAndView loggedout() {
-
+    @RequestMapping("/login")
+    public ModelAndView login() {
         ModelAndView mv = new ModelAndView();
-        mv.setViewName("loggedout");
+        mv.setViewName("login");
 
         return mv;
     }

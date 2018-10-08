@@ -20,8 +20,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
         jsr250Enabled = true,
         prePostEnabled = true)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
-//    @Autowired
-//    private BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     private DSLContext dslContext;
@@ -44,30 +42,21 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
+                .antMatchers("/", "/home").permitAll()
+                .antMatchers("/login").permitAll()
                 .anyRequest().authenticated()
-//                .and()
-//                .formLogin();
-//        http.
-//                authorizeRequests()
-                .antMatchers("/", "/home").anonymous()
-//                .antMatchers("/login").permitAll()
-//                .antMatchers("/loggedout").permitAll()
-////                .antMatchers("/registration").permitAll()
-//                .antMatchers("/admin").hasRole("ADMIN")
-//                .antMatchers("/admin/**").hasRole("ADMIN")
-//                .anyRequest().authenticated()
-//                .anyRequest().hasAnyRole("USER", "ADMIN")
-//                .antMatchers("/admin/**").hasAuthority("ADMIN").anyRequest()
-////                .authenticated()
+
                 .and().formLogin()
-//                .loginPage("/login").failureUrl("/login?error=true")
-                .defaultSuccessUrl("/test")
-////                .usernameParameter("username")
-////                .passwordParameter("password")
+                .loginPage("/login").failureUrl("/login?error")
+                .defaultSuccessUrl("/home")
+//                .usernameParameter("username")
+//                .passwordParameter("password")
+
                 .and().logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/loggedout");
-////                .and().exceptionHandling().accessDeniedPage("/access-denied");
+                .logoutSuccessUrl("/login?logout");
+
+//                .and().exceptionHandling().accessDeniedPage("/access-denied");
     }
 
 //    @Override

@@ -41,7 +41,6 @@ CREATE TABLE IF NOT EXISTS Benutzer (
 	Benutzername CHAR(50) NOT NULL,
 	Passwort VARCHAR(551) NOT NULL,
 	AccountStatus TINYINT(1) UNSIGNED NOT NULL COMMENT '0=newDataOnLogin; 1=normal',
-	Rechte TINYINT(1) UNSIGNED NOT NULL COMMENT '0=user;1=admin',
 	PRIMARY KEY (BenutzerId),
 	UNIQUE INDEX Benutzername (Benutzername),
 	INDEX Benutzer_FKIndex1 (PersonId),

@@ -1,0 +1,19 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>SETTINGS</title>
+</head>
+<body>
+<h1>SETTINGS</h1>
+<p><a href="/home">Home here</a></p>
+<form th:action="@{/login}" method="PUT">
+
+    <div><label> Vorname: <input type="password" name="password"/> </label></div>
+    <div><label> Nachname: <input type="password" name="password"/> </label></div>
+    <div><label> User Name : <input type="text" name="username" autofocus/> </label></div>
+    <div><label> Password: <input type="password" name="password"/> </label></div>
+    <div><input type="submit" value="Sign In"/></div>
+</form>
+
+<form th:action="@{/settings}" th:method="DELETE"><input type="submit" value="DELETE ACCOUNT"/></form>
+</body>
+</html>

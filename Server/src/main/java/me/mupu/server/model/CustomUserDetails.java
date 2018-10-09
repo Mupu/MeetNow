@@ -1,5 +1,6 @@
 package me.mupu.server.model;
 
+import lombok.Getter;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.BenutzerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import java.util.Collection;
 
 public class CustomUserDetails implements UserDetails {
 
+    @Getter
     private final BenutzerRecord userdata;
     private final Collection<GrantedAuthority> collection;
     public CustomUserDetails(BenutzerRecord userdata, Collection<GrantedAuthority> collection) {

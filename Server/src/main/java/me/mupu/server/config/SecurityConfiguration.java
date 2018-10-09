@@ -22,9 +22,6 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private DSLContext dslContext;
-
-    @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
@@ -42,15 +39,15 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
+                .antMatchers("/favicon.ico").permitAll()
                 .antMatchers("/", "/home").permitAll()
+                .antMatchers("/register", "/registration").permitAll()
                 .antMatchers("/login").permitAll()
                 .anyRequest().authenticated()
 
                 .and().formLogin()
                 .loginPage("/login").failureUrl("/login?error")
                 .defaultSuccessUrl("/home")
-//                .usernameParameter("username")
-//                .passwordParameter("password")
 
                 .and().logout()
                 .logoutRequestMatcher(new AntPathRequestMatcher("/logout"))

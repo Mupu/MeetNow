@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Benutzer extends TableImpl<BenutzerRecord> {
 
-    private static final long serialVersionUID = -1845624501;
+    private static final long serialVersionUID = 1648316595;
 
     /**
      * The reference instance of <code>meetnow.benutzer</code>
@@ -81,11 +81,6 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
      * The column <code>meetnow.benutzer.AccountStatus</code>. 0=newDataOnLogin; 1=normal
      */
     public final TableField<BenutzerRecord, UByte> ACCOUNTSTATUS = createField("AccountStatus", org.jooq.impl.SQLDataType.TINYINTUNSIGNED.nullable(false), this, "0=newDataOnLogin; 1=normal");
-
-    /**
-     * The column <code>meetnow.benutzer.Rechte</code>. 0=user;1=admin
-     */
-    public final TableField<BenutzerRecord, UByte> RECHTE = createField("Rechte", org.jooq.impl.SQLDataType.TINYINTUNSIGNED.nullable(false), this, "0=user;1=admin");
 
     /**
      * Create a <code>meetnow.benutzer</code> table reference

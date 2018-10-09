@@ -42,7 +42,6 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .where(USER_ROLE.BENUTZERID.eq(userdata.getBenutzerid()))
                 .fetch(ROLE.NAME);
         roles.forEach(r -> collection.add(new SimpleGrantedAuthority("ROLE_" + r)));
-        collection.forEach(System.out::println);
         return new CustomUserDetails(userdata, collection);
     }
 }

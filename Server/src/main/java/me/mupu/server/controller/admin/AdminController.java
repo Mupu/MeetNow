@@ -7,12 +7,14 @@ import org.springframework.web.servlet.ModelAndView;
 
 @Controller
 @Secured("ROLE_ADMIN")
+@RequestMapping("/admin")
 public class AdminController {
-    @RequestMapping("/admin")
-    public ModelAndView admin() {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("admin/admin");
 
+    @RequestMapping
+    public ModelAndView adminHome() {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("admin/adminHome");
         return mv;
     }
+
 }

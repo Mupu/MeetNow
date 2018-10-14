@@ -41,7 +41,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Role extends TableImpl<RoleRecord> {
 
-    private static final long serialVersionUID = 2062800214;
+    private static final long serialVersionUID = -1401135392;
 
     /**
      * The reference instance of <code>meetnow.role</code>
@@ -64,7 +64,7 @@ public class Role extends TableImpl<RoleRecord> {
     /**
      * The column <code>meetnow.role.Name</code>.
      */
-    public final TableField<RoleRecord, String> NAME = createField("Name", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+    public final TableField<RoleRecord, String> NAME = createField("Name", org.jooq.impl.SQLDataType.CHAR(16).nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.role</code> table reference

@@ -41,7 +41,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Person extends TableImpl<PersonRecord> {
 
-    private static final long serialVersionUID = -21696582;
+    private static final long serialVersionUID = 1144462487;
 
     /**
      * The reference instance of <code>meetnow.person</code>
@@ -64,22 +64,22 @@ public class Person extends TableImpl<PersonRecord> {
     /**
      * The column <code>meetnow.person.Vorname</code>.
      */
-    public final TableField<PersonRecord, String> VORNAME = createField("Vorname", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+    public final TableField<PersonRecord, String> VORNAME = createField("Vorname", org.jooq.impl.SQLDataType.CHAR(16).nullable(false), this, "");
 
     /**
      * The column <code>meetnow.person.Nachname</code>.
      */
-    public final TableField<PersonRecord, String> NACHNAME = createField("Nachname", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+    public final TableField<PersonRecord, String> NACHNAME = createField("Nachname", org.jooq.impl.SQLDataType.CHAR(16).nullable(false), this, "");
 
     /**
      * The column <code>meetnow.person.Email</code>.
      */
-    public final TableField<PersonRecord, String> EMAIL = createField("Email", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+    public final TableField<PersonRecord, String> EMAIL = createField("Email", org.jooq.impl.SQLDataType.CHAR(32).nullable(false), this, "");
 
     /**
      * The column <code>meetnow.person.Token</code>.
      */
-    public final TableField<PersonRecord, String> TOKEN = createField("Token", org.jooq.impl.SQLDataType.CHAR(36).nullable(false), this, "");
+    public final TableField<PersonRecord, String> TOKEN = createField("Token", org.jooq.impl.SQLDataType.CHAR(36), this, "");
 
     /**
      * Create a <code>meetnow.person</code> table reference

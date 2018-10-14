@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS Besprechung (
 CREATE TABLE IF NOT EXISTS ausleihe (
    BesprechungId INT(10) UNSIGNED NOT NULL,
 	AusstattungsgegenstandId INT(10) UNSIGNED NOT NULL,
+	Anzahl INT(10) UNSIGNED NOT NULL,
 	PRIMARY KEY (BesprechungId, AusstattungsgegenstandId),
 	INDEX ausleihe_FKIndex1 (BesprechungId),
 	INDEX ausleihe_FKIndex2 (AusstattungsgegenstandId),

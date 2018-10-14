@@ -1,15 +1,15 @@
 USE meetnow;
 
-insert into person (vorname, nachname, email, token) values ("Hans", "Müller", "test@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Peter", "Fischer", "test1@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Alex", "Schmidt", "test2@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Karl", "Becker", "test3@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Ursula", "Hoffmann", "test4@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Maria", "Klein", "test5@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Monika", "Mayer", "test6@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Sophie", "Schneider", "test7@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Sara", "Koch", "test8@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
-insert into person (vorname, nachname, email, token) values ("Roxanne", "Peters", "test9@web.de", "19f24179-e193-4f78-b7c4-cadedcf5593f");
+insert into person (vorname, nachname, email) values ("Hans", "Müller", "test@web.de");
+insert into person (vorname, nachname, email) values ("Peter", "Fischer", "test1@web.de");
+insert into person (vorname, nachname, email) values ("Alex", "Schmidt", "test2@web.de");
+insert into person (vorname, nachname, email) values ("Karl", "Becker", "test3@web.de");
+insert into person (vorname, nachname, email) values ("Ursula", "Hoffmann", "test4@web.de");
+insert into person (vorname, nachname, email) values ("Maria", "Klein", "test5@web.de");
+insert into person (vorname, nachname, email) values ("Monika", "Mayer", "test6@web.de");
+insert into person (vorname, nachname, email) values ("Sophie", "Schneider", "test7@web.de");
+insert into person (vorname, nachname, email) values ("Sara", "Koch", "test8@web.de");
+insert into person (vorname, nachname, email) values ("Roxanne", "Peters", "test9@web.de");
 
 insert into raum (ort, anzahlStuhl, anzahlTisch, anzahlLaptop, Whiteboard, Barrierefrei, Klimaanlage) values ("oben", 10, 5, 10, 1, 0, 1);
 insert into raum (ort, anzahlStuhl, anzahlTisch, anzahlLaptop, Whiteboard, Barrierefrei, Klimaanlage) values ("unten", 5,0, 5, 1, 1, 1);
@@ -38,9 +38,9 @@ insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde)
 insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (2, 9, "test2", "2018-10-29 13:10:00.000", "2018-10-29 14:10:00.000");
 insert into besprechung (raumId, besitzerId, thema, zeitraumStart, zeitraumEnde) values (1, 6, "test3", "2018-10-29 15:10:00.000", "2018-10-29 16:10:00.000");
 
-insert into ausleihe values (1, 1);
-insert into ausleihe values (1, 3);
-insert into ausleihe values (2, 2);
+insert into ausleihe values (1, 1, 2);
+insert into ausleihe values (1, 3, 1);
+insert into ausleihe values (2, 2, 1);
 
 
 insert into teilnahme values (1, 1);

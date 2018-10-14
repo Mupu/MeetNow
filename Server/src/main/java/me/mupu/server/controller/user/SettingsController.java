@@ -77,12 +77,11 @@ public class SettingsController {
                         .set(BENUTZER.PASSWORT, hashPasswordEncoder.encode(passwort))
                         .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
                         .execute();
+
+            mv.addObject("dataChanged", "");
         } catch (Exception e) {
-//            return new ModelAndView("redirect:/user/settings?dataChangedError");
             mv.addObject("dataChangedError", "");
         }
-//        return new ModelAndView("redirect:/user/settings?dataChanged");
-        mv.addObject("dataChanged", "");
         return mv;
     }
 

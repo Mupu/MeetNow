@@ -40,7 +40,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Ausleihe extends TableImpl<AusleiheRecord> {
 
-    private static final long serialVersionUID = -1042399226;
+    private static final long serialVersionUID = -971789006;
 
     /**
      * The reference instance of <code>meetnow.ausleihe</code>
@@ -64,6 +64,11 @@ public class Ausleihe extends TableImpl<AusleiheRecord> {
      * The column <code>meetnow.ausleihe.AusstattungsgegenstandId</code>.
      */
     public final TableField<AusleiheRecord, UInteger> AUSSTATTUNGSGEGENSTANDID = createField("AusstattungsgegenstandId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
+
+    /**
+     * The column <code>meetnow.ausleihe.Anzahl</code>.
+     */
+    public final TableField<AusleiheRecord, UInteger> ANZAHL = createField("Anzahl", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.ausleihe</code> table reference

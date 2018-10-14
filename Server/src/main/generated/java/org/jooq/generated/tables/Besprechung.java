@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Besprechung extends TableImpl<BesprechungRecord> {
 
-    private static final long serialVersionUID = 581763599;
+    private static final long serialVersionUID = 1453162187;
 
     /**
      * The reference instance of <code>meetnow.besprechung</code>
@@ -75,7 +75,7 @@ public class Besprechung extends TableImpl<BesprechungRecord> {
     /**
      * The column <code>meetnow.besprechung.Thema</code>.
      */
-    public final TableField<BesprechungRecord, String> THEMA = createField("Thema", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+    public final TableField<BesprechungRecord, String> THEMA = createField("Thema", org.jooq.impl.SQLDataType.CHAR(32).nullable(false), this, "");
 
     /**
      * The column <code>meetnow.besprechung.zeitraumStart</code>.

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" :>
+<head>
+    <meta charset="UTF-8">
+    <title>TERMINE</title>
+</head>
+<body>
+<h1>TERMINE</h1>
+<p><a href="/user">User Home here</a></p>
+
+<table>
+    <thead>
+    <tr>
+        <td>Termine</td>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr><td  th:if="${termineMitRaumUndBesitzer.isEmpty()}">Keine Termine</td></tr>
+    <th:block th:each="item : ${termineMitRaumUndBesitzer}">
+        <tr>
+            <td>
+                <details>
+                    <summary th:text="${item.getValue('Thema')} + '  :  ' + ${item.getValue('zeitraumStart')}
+                                    + '  -  ' + ${item.getValue('zeitraumEnde')}"></summary>
+                    <table>
+                        <thead>
+                        <tr>
+                            <td>RaumInfo</td>
+                            <td>BesitzerInfo</td>
+                        </tr>
+                        </thead>
+                        <tr>
+                            <td>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <ul>
+                                                <li>Ort:</li>
+                                                <li>AnzahlStuhl:</li>
+                                                <li>AnzahlTisch:</li>
+                                                <li>AnzahlLaptop:</li>
+                                                <li>Whiteboard:</li>
+                                                <li>Barrierefrei:</li>
+                                                <li>Klimaanlage:</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                            <label th:text="${item.getValue('Ort')}"></label><br>
+                                            <label th:text="${item.getValue('anzahlStuhl')}"></label><br>
+                                            <label th:text="${item.getValue('anzahlTisch')}"></label><br>
+                                            <label th:text="${item.getValue('anzahlLaptop')}"></label><br>
+                                            <label th:text="${item.getValue('Whiteboard')}   ? 'Ja' : 'Nein'"></label><br>
+                                            <label th:text="${item.getValue('Barrierefrei')} ? 'Ja' : 'Nein'"></label><br>
+                                            <label th:text="${item.getValue('Klimaanlage')}  ? 'Ja' : 'Nein'"></label><br>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table>
+                                    <tbody>
+                                    <tr>
+                                        <td>
+                                            <ul>
+                                                <li>Vorname:</li>
+                                                <li>Nachname:</li>
+                                                <li>Email:</li>
+                                            </ul>
+                                        </td>
+                                        <td>
+                                                <label th:text="${item.getValue('BesitzerVorname')}"></label><br>
+                                                <label th:text="${item.getValue('BesitzerNachname')}"></label><br>
+                                                <label th:text="${item.getValue('BesitzerEmail')}"></label><br>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <table>
+                                    <thead>
+                                    <tr>
+                                        <td>Name</td>
+                                        <td>Anzahl</td>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr><td  th:if="${ausstattungsgegenstandResultList.get(termineMitRaumUndBesitzer.indexOf(item)).isEmpty()}">Keine Gegenstände reserviert</td></tr>
+                                    <th:block
+                                            th:each="gegenstand : ${ausstattungsgegenstandResultList.get(termineMitRaumUndBesitzer.indexOf(item))}">
+                                        <tr>
+                                            <td th:text="${gegenstand.getValue('Name')}"></td>
+                                            <td th:text="${gegenstand.getValue('Anzahl')}"></td>
+                                        </tr>
+                                    </th:block>
+                                    </tbody>
+                                </table>
+                            </td>
+                            <td>
+                                <details>
+                                    <summary th:text="Teilnehmer"></summary>
+                                    <table>
+                                        <thead>
+                                        <tr>
+                                            <td>Vorname</td>
+                                            <td>Nachname</td>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <th:block
+                                                th:each="user : ${teilnehmerResultList.get(termineMitRaumUndBesitzer.indexOf(item))}">
+                                            <tr>
+                                                <td th:text="${user.getValue('Vorname')}"></td>
+                                                <td th:text="${user.getValue('Nachname')}"></td>
+                                            </tr>
+                                        </th:block>
+                                        </tbody>
+                                    </table>
+                                </details>
+                            </td>
+                        </tr>
+                    </table>
+                </details>
+            </td>
+        </tr>
+    </th:block>
+    </tbody>
+</table>
+</body>
+</html>

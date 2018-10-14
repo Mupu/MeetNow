@@ -29,7 +29,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implements Record5<UInteger, UInteger, String, String, UByte> {
 
-    private static final long serialVersionUID = 1874929843;
+    private static final long serialVersionUID = 487949281;
 
     /**
      * Setter for <code>meetnow.benutzer.BenutzerId</code>.
@@ -92,17 +92,17 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
     }
 
     /**
-     * Setter for <code>meetnow.benutzer.AccountStatus</code>. 0=newDataOnLogin; 1=normal
+     * Setter for <code>meetnow.benutzer.IsEnabled</code>.
      */
-    public BenutzerRecord setAccountstatus(UByte value) {
+    public BenutzerRecord setIsenabled(UByte value) {
         set(4, value);
         return this;
     }
 
     /**
-     * Getter for <code>meetnow.benutzer.AccountStatus</code>. 0=newDataOnLogin; 1=normal
+     * Getter for <code>meetnow.benutzer.IsEnabled</code>.
      */
-    public UByte getAccountstatus() {
+    public UByte getIsenabled() {
         return (UByte) get(4);
     }
 
@@ -175,7 +175,7 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
      */
     @Override
     public Field<UByte> field5() {
-        return Benutzer.BENUTZER.ACCOUNTSTATUS;
+        return Benutzer.BENUTZER.ISENABLED;
     }
 
     /**
@@ -215,7 +215,7 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
      */
     @Override
     public UByte component5() {
-        return getAccountstatus();
+        return getIsenabled();
     }
 
     /**
@@ -255,7 +255,7 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
      */
     @Override
     public UByte value5() {
-        return getAccountstatus();
+        return getIsenabled();
     }
 
     /**
@@ -299,7 +299,7 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
      */
     @Override
     public BenutzerRecord value5(UByte value) {
-        setAccountstatus(value);
+        setIsenabled(value);
         return this;
     }
 
@@ -330,13 +330,13 @@ public class BenutzerRecord extends UpdatableRecordImpl<BenutzerRecord> implemen
     /**
      * Create a detached, initialised BenutzerRecord
      */
-    public BenutzerRecord(UInteger benutzerid, UInteger personid, String benutzername, String passwort, UByte accountstatus) {
+    public BenutzerRecord(UInteger benutzerid, UInteger personid, String benutzername, String passwort, UByte isenabled) {
         super(Benutzer.BENUTZER);
 
         set(0, benutzerid);
         set(1, personid);
         set(2, benutzername);
         set(3, passwort);
-        set(4, accountstatus);
+        set(4, isenabled);
     }
 }

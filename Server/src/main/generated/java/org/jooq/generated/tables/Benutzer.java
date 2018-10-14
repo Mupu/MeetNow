@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Benutzer extends TableImpl<BenutzerRecord> {
 
-    private static final long serialVersionUID = 1648316595;
+    private static final long serialVersionUID = 1609188471;
 
     /**
      * The reference instance of <code>meetnow.benutzer</code>
@@ -78,9 +78,9 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
     public final TableField<BenutzerRecord, String> PASSWORT = createField("Passwort", org.jooq.impl.SQLDataType.VARCHAR(551).nullable(false), this, "");
 
     /**
-     * The column <code>meetnow.benutzer.AccountStatus</code>. 0=newDataOnLogin; 1=normal
+     * The column <code>meetnow.benutzer.IsEnabled</code>.
      */
-    public final TableField<BenutzerRecord, UByte> ACCOUNTSTATUS = createField("AccountStatus", org.jooq.impl.SQLDataType.TINYINTUNSIGNED.nullable(false), this, "0=newDataOnLogin; 1=normal");
+    public final TableField<BenutzerRecord, UByte> ISENABLED = createField("IsEnabled", org.jooq.impl.SQLDataType.TINYINTUNSIGNED.nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.benutzer</code> table reference
@@ -128,7 +128,7 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.BENUTZER_BENUTZERNAME, Indexes.BENUTZER_BENUTZER_FKINDEX1, Indexes.BENUTZER_PRIMARY);
+        return Arrays.<Index>asList(Indexes.BENUTZER_BENUTZERNAME, Indexes.BENUTZER_BENUTZER_FKINDEX1, Indexes.BENUTZER_PERSONID, Indexes.BENUTZER_PRIMARY);
     }
 
     /**
@@ -152,7 +152,7 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
      */
     @Override
     public List<UniqueKey<BenutzerRecord>> getKeys() {
-        return Arrays.<UniqueKey<BenutzerRecord>>asList(Keys.KEY_BENUTZER_PRIMARY, Keys.KEY_BENUTZER_BENUTZERNAME);
+        return Arrays.<UniqueKey<BenutzerRecord>>asList(Keys.KEY_BENUTZER_PRIMARY, Keys.KEY_BENUTZER_PERSONID, Keys.KEY_BENUTZER_BENUTZERNAME);
     }
 
     /**

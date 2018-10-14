@@ -1,7 +1,10 @@
 package me.mupu.server.controller.user;
 
+import me.mupu.server.HashPasswordEncoder;
 import me.mupu.server.model.CustomUserDetails;
 import org.jooq.DSLContext;
+import org.jooq.Record;
+import org.jooq.generated.tables.records.PersonRecord;
 import org.jooq.types.UInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
@@ -21,17 +24,58 @@ public class SettingsController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/settings");
 
+        CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Record r = dslContext.select().from(PERSON).leftJoin(BENUTZER).using(PERSON.PERSONID)
+                .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
+                .fetchOne();
+        mv.addObject("userdata", r);
+
         return mv;
     }
 
     @Autowired
     private DSLContext dslContext;
 
+    @Autowired
+    private HashPasswordEncoder hashPasswordEncoder;
+
     @PutMapping()
-    public ModelAndView updateData() {
+    public ModelAndView updateData(@RequestParam("vorname") String vorname,
+                                   @RequestParam("nachname") String nachname,
+                                   @RequestParam("username") String benutzername,
+                                   @RequestParam("passwort") String passwort) {
+
+        // get current logged in user
         CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        return new ModelAndView("redirect:/login?dataChanged");
+        try {
+            if (!vorname.equals(""))
+                dslContext.update(PERSON)
+                        .set(PERSON.VORNAME, vorname)
+                        .where(PERSON.PERSONID.eq(user.getUserdata().getPersonid()))
+                        .execute();
+
+            if (!nachname.equals(""))
+                dslContext.update(PERSON)
+                        .set(PERSON.NACHNAME, nachname)
+                        .where(PERSON.PERSONID.eq(user.getUserdata().getPersonid()))
+                        .execute();
+
+            if (!benutzername.equals(""))
+                dslContext.update(BENUTZER)
+                        .set(BENUTZER.BENUTZERNAME, benutzername)
+                        .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
+                        .execute();
+
+            if (!passwort.equals(""))
+                dslContext.update(BENUTZER)
+                        .set(BENUTZER.PASSWORT, hashPasswordEncoder.encode(passwort))
+                        .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
+                        .execute();
+        } catch (Exception e) {
+            return new ModelAndView("redirect:/settings?dataChangedError");
+        }
+        return new ModelAndView("redirect:/settings?dataChanged");
     }
 
     @DeleteMapping()

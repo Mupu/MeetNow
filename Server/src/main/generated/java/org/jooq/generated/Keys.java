@@ -63,9 +63,11 @@ public class Keys {
     public static final UniqueKey<AusleiheRecord> KEY_AUSLEIHE_PRIMARY = UniqueKeys0.KEY_AUSLEIHE_PRIMARY;
     public static final UniqueKey<AusstattungsgegenstandRecord> KEY_AUSSTATTUNGSGEGENSTAND_PRIMARY = UniqueKeys0.KEY_AUSSTATTUNGSGEGENSTAND_PRIMARY;
     public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_PRIMARY = UniqueKeys0.KEY_BENUTZER_PRIMARY;
+    public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_PERSONID = UniqueKeys0.KEY_BENUTZER_PERSONID;
     public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_BENUTZERNAME = UniqueKeys0.KEY_BENUTZER_BENUTZERNAME;
     public static final UniqueKey<BesprechungRecord> KEY_BESPRECHUNG_PRIMARY = UniqueKeys0.KEY_BESPRECHUNG_PRIMARY;
     public static final UniqueKey<PersonRecord> KEY_PERSON_PRIMARY = UniqueKeys0.KEY_PERSON_PRIMARY;
+    public static final UniqueKey<PersonRecord> KEY_PERSON_EMAIL = UniqueKeys0.KEY_PERSON_EMAIL;
     public static final UniqueKey<RaumRecord> KEY_RAUM_PRIMARY = UniqueKeys0.KEY_RAUM_PRIMARY;
     public static final UniqueKey<RoleRecord> KEY_ROLE_PRIMARY = UniqueKeys0.KEY_ROLE_PRIMARY;
     public static final UniqueKey<TeilnahmeRecord> KEY_TEILNAHME_PRIMARY = UniqueKeys0.KEY_TEILNAHME_PRIMARY;
@@ -102,9 +104,11 @@ public class Keys {
         public static final UniqueKey<AusleiheRecord> KEY_AUSLEIHE_PRIMARY = Internal.createUniqueKey(Ausleihe.AUSLEIHE, "KEY_ausleihe_PRIMARY", Ausleihe.AUSLEIHE.BESPRECHUNGID, Ausleihe.AUSLEIHE.AUSSTATTUNGSGEGENSTANDID);
         public static final UniqueKey<AusstattungsgegenstandRecord> KEY_AUSSTATTUNGSGEGENSTAND_PRIMARY = Internal.createUniqueKey(Ausstattungsgegenstand.AUSSTATTUNGSGEGENSTAND, "KEY_ausstattungsgegenstand_PRIMARY", Ausstattungsgegenstand.AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID);
         public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_PRIMARY = Internal.createUniqueKey(Benutzer.BENUTZER, "KEY_benutzer_PRIMARY", Benutzer.BENUTZER.BENUTZERID);
+        public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_PERSONID = Internal.createUniqueKey(Benutzer.BENUTZER, "KEY_benutzer_PersonId", Benutzer.BENUTZER.PERSONID);
         public static final UniqueKey<BenutzerRecord> KEY_BENUTZER_BENUTZERNAME = Internal.createUniqueKey(Benutzer.BENUTZER, "KEY_benutzer_Benutzername", Benutzer.BENUTZER.BENUTZERNAME);
         public static final UniqueKey<BesprechungRecord> KEY_BESPRECHUNG_PRIMARY = Internal.createUniqueKey(Besprechung.BESPRECHUNG, "KEY_besprechung_PRIMARY", Besprechung.BESPRECHUNG.BESPRECHUNGID);
         public static final UniqueKey<PersonRecord> KEY_PERSON_PRIMARY = Internal.createUniqueKey(Person.PERSON, "KEY_person_PRIMARY", Person.PERSON.PERSONID);
+        public static final UniqueKey<PersonRecord> KEY_PERSON_EMAIL = Internal.createUniqueKey(Person.PERSON, "KEY_person_Email", Person.PERSON.EMAIL);
         public static final UniqueKey<RaumRecord> KEY_RAUM_PRIMARY = Internal.createUniqueKey(Raum.RAUM, "KEY_raum_PRIMARY", Raum.RAUM.RAUMID);
         public static final UniqueKey<RoleRecord> KEY_ROLE_PRIMARY = Internal.createUniqueKey(Role.ROLE, "KEY_role_PRIMARY", Role.ROLE.ROLEID);
         public static final UniqueKey<TeilnahmeRecord> KEY_TEILNAHME_PRIMARY = Internal.createUniqueKey(Teilnahme.TEILNAHME, "KEY_teilnahme_PRIMARY", Teilnahme.TEILNAHME.BENUTZERID, Teilnahme.TEILNAHME.BESPRECHUNGID);

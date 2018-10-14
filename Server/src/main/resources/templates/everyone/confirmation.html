@@ -1,0 +1,48 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>CONFIRMATION</title>
+</head>
+<body>
+<h1>CONFIRMATION</h1>
+<p><a href="/login">Login here</a></p>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form action="#" th:if="!${invalidToken} + !${successMessage}" th:action="@{/confirmation}" th:object="${confirmationForm}" method="post">
+                <table>
+                    <tr>
+                        <td>Benutzername:</td>
+                        <td><input type="text" th:field="*{username}" /></td>
+                        <td th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></td>
+                    </tr>
+                    <tr>
+                        <td>Passwort:</td>
+                        <td><input type="password" th:field="*{password}" /></td>
+                        <td th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></td>
+                    </tr>
+                    <tr>
+                        <td>Passwort wiederholen:</td>
+                        <td><input type="password" th:field="*{repeatPassword}" /></td>
+                        <td th:if="${#fields.hasErrors('repeatPassword')}" th:errors="*{repeatPassword}"></td>
+                        <td th:if="${#fields.hasErrors('repeatedPasswordIsCorrect')}" th:errors="*{repeatedPasswordIsCorrect}"></td>
+                    </tr>
+                    <tr>
+                        <td><button type="submit">Submit</button></td>
+                        <td><input type="hidden" name="token" th:value="${confirmationToken}" /></td>
+                    </tr>
+                </table>
+            </form>
+            <table>
+                <tr><p th:if="${nameTaken}" th:text="${nameTaken}"></p></tr>
+
+                <tr><p th:if="${invalidToken}" th:text="${invalidToken}"></p></tr>
+
+                <tr><p th:if="${successMessage}" th:text="${successMessage}"></p></tr>
+            </table>
+            <div ></div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

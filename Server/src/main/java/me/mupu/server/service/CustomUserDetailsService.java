@@ -3,6 +3,7 @@ package me.mupu.server.service;
 import me.mupu.server.model.CustomUserDetails;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.BenutzerRecord;
+import org.jooq.generated.tables.records.PersonRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -44,4 +45,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         roles.forEach(r -> collection.add(new SimpleGrantedAuthority("ROLE_" + r)));
         return new CustomUserDetails(userdata, collection);
     }
+
+    public PersonRecord findUserByConfimationToken(String confirmationToken) {
+        // get user
+        return dslContext.selectFrom(PERSON)
+                .where(PERSON.TOKEN.eq(confirmationToken))
+                .fetchAny();
+    }
+
+
 }

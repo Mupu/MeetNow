@@ -46,12 +46,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return userdata.getAccountstatus().byteValue() == 1;
+        return true;
     }
 
     @Override
     public boolean isEnabled() {
-        return true;
+        return userdata.getIsenabled().byteValue() == 1;
     }
 
 }

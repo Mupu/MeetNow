@@ -9,7 +9,6 @@
 <div th:if="${param.error}"> Invalid username and password. </div>
 <div th:if="${param.logout}"> You have been logged out. </div>
 <div th:if="${param.accountDeleted}"> Your account has been deleted. </div>
-<div th:if="${param.dataChanged}"> Succsessfully changed your login credentials. </div>
 <form th:action="@{/login}" method="post">
     <div><label> User Name: <input type="text" name="username" autofocus/> </label></div>
     <div><label> Password: <input type="password" name="password"/> </label></div>

@@ -41,7 +41,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Person extends TableImpl<PersonRecord> {
 
-    private static final long serialVersionUID = 923627169;
+    private static final long serialVersionUID = -21696582;
 
     /**
      * The reference instance of <code>meetnow.person</code>
@@ -70,6 +70,16 @@ public class Person extends TableImpl<PersonRecord> {
      * The column <code>meetnow.person.Nachname</code>.
      */
     public final TableField<PersonRecord, String> NACHNAME = createField("Nachname", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+
+    /**
+     * The column <code>meetnow.person.Email</code>.
+     */
+    public final TableField<PersonRecord, String> EMAIL = createField("Email", org.jooq.impl.SQLDataType.CHAR(50).nullable(false), this, "");
+
+    /**
+     * The column <code>meetnow.person.Token</code>.
+     */
+    public final TableField<PersonRecord, String> TOKEN = createField("Token", org.jooq.impl.SQLDataType.CHAR(36).nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.person</code> table reference
@@ -117,7 +127,7 @@ public class Person extends TableImpl<PersonRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.PERSON_PRIMARY);
+        return Arrays.<Index>asList(Indexes.PERSON_EMAIL, Indexes.PERSON_PRIMARY);
     }
 
     /**
@@ -141,7 +151,7 @@ public class Person extends TableImpl<PersonRecord> {
      */
     @Override
     public List<UniqueKey<PersonRecord>> getKeys() {
-        return Arrays.<UniqueKey<PersonRecord>>asList(Keys.KEY_PERSON_PRIMARY);
+        return Arrays.<UniqueKey<PersonRecord>>asList(Keys.KEY_PERSON_PRIMARY, Keys.KEY_PERSON_EMAIL);
     }
 
     /**

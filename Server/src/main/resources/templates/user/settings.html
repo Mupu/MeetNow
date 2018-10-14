@@ -4,16 +4,37 @@
 </head>
 <body>
 <h1>SETTINGS</h1>
-<p><a href="/home">Home here</a></p>
+<p><a href="/user">User Home here</a></p>
+
 <div th:if="${param.dataChanged}"> Succsessfully changed your credentials.</div>
 <div th:if="${param.dataChangedError}"> Could not change your credentials.</div>
-<form action="#" th:action="@{/settings}" th:method="put">
 
-    <div><label> Vorname: <input type="text" name="vorname" autofocus/> </label></div>
-    <div><label> Nachname: <input type="text" name="nachname"/> </label></div>
-    <div><label> User Name : <input type="text" name="benutzername"/> </label></div>
-    <div><label> Password: <input type="password" name="passwort"/> </label></div>
-    <div><input type="submit" value="Change data"/></div>
+<form action="#" th:action="@{/user/settings}" th:method="put">
+    <table>
+        <tbody>
+            <tr>
+                <td><label> Vorname: </label></td>
+                <td><input type="text" name="vorname" autofocus/> </td>
+            </tr>
+
+            <tr>
+                <td><label> Nachname:</label> </td>
+                <td><input type="text" name="nachname"/> </td>
+            </tr>
+
+            <tr>
+                <td><label> Username: </label></td>
+                <td><input type="text" name="benutzername"/> </td>
+            </tr>
+
+            <tr>
+                <td><label> Password: </label></td>
+                <td><input type="password" name="passwort"/> </td>
+            </tr>
+
+            <tr><td><input type="submit" value="Change data"/></td></tr>
+        </tbody>
+    </table>
 </form>
 
 <div>
@@ -28,6 +49,6 @@
 <div>
     <td th:text="'passwort:' + ${userdata.get(8)}">...</td>
 </div>
-<form th:action="@{/settings}" th:method="DELETE"><input type="submit" value="DELETE ACCOUNT"/></form>
+<form th:action="@{/user/settings}" th:method="DELETE"><input type="submit" value="DELETE ACCOUNT"/></form>
 </body>
 </html>

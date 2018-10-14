@@ -18,8 +18,16 @@ import static org.jooq.generated.Tables.*;
 
 @Controller
 @Secured("ROLE_USER")
+@RequestMapping("user/settings")
 public class SettingsController {
-    @GetMapping("/settings")
+
+    @Autowired
+    private DSLContext dslContext;
+
+    @Autowired
+    private HashPasswordEncoder hashPasswordEncoder;
+
+    @GetMapping
     public ModelAndView settings() {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/settings");
@@ -33,17 +41,14 @@ public class SettingsController {
         return mv;
     }
 
-    @Autowired
-    private DSLContext dslContext;
-
-    @Autowired
-    private HashPasswordEncoder hashPasswordEncoder;
-
     @PutMapping()
-    public ModelAndView updateData(@RequestParam("vorname") String vorname,
-                                   @RequestParam("nachname") String nachname,
-                                   @RequestParam("username") String benutzername,
-                                   @RequestParam("passwort") String passwort) {
+    public ModelAndView updateData(@RequestParam String vorname,
+                                   @RequestParam String nachname,
+                                   @RequestParam String benutzername,
+                                   @RequestParam String passwort) {
+
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("redirect:/user/settings");
 
         // get current logged in user
         CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -73,9 +78,12 @@ public class SettingsController {
                         .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
                         .execute();
         } catch (Exception e) {
-            return new ModelAndView("redirect:/settings?dataChangedError");
+//            return new ModelAndView("redirect:/user/settings?dataChangedError");
+            mv.addObject("dataChangedError", "");
         }
-        return new ModelAndView("redirect:/settings?dataChanged");
+//        return new ModelAndView("redirect:/user/settings?dataChanged");
+        mv.addObject("dataChanged", "");
+        return mv;
     }
 
     @DeleteMapping()

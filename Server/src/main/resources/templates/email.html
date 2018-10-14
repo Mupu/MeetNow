@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <meta charset="UTF-8">
+    <title>Confirmation</title>
+</head>
+<body>
+<p th:text="'To confirm your e-mail address, please click the link below:\n'
+            + ${appUrl} + '/confirmation?token=' + ${confirmationToken}"></p>
+</body>
+</html>

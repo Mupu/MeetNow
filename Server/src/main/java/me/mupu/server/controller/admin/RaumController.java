@@ -41,14 +41,6 @@ public class RaumController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/raum");
 
-        System.out.println(id);
-        System.out.println(ort);
-        System.out.println(anzahlStuhl);
-        System.out.println(anzahlTisch);
-        System.out.println(anzahlLaptop);
-        System.out.println(whiteboard);
-        System.out.println(barrierefrei);
-        System.out.println(klimaanlage);
         dslContext.update(RAUM)
                 .set(RAUM.ORT, ort)
                 .set(RAUM.ANZAHLSTUHL, UInteger.valueOf(anzahlStuhl))
@@ -69,7 +61,6 @@ public class RaumController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/raum");
 
-        System.out.println("delete: " + id);
         dslContext.deleteFrom(RAUM)
                 .where(RAUM.RAUMID.eq(UInteger.valueOf(id)))
                 .execute();
@@ -88,7 +79,6 @@ public class RaumController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/raum");
 
-        System.out.println("add: " + ort + " " + anzahlStuhl + " " + anzahlTisch + " " + anzahlLaptop + " " + whiteboard + " " + barrierefrei + " " + klimaanlage);
         dslContext.insertInto(RAUM)
                 .columns(RAUM.ORT,
                         RAUM.ANZAHLSTUHL,

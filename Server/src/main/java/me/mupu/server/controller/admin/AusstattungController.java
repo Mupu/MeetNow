@@ -34,9 +34,6 @@ public class AusstattungController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/ausstattung");
 
-        System.out.println(id);
-        System.out.println(name);
-        System.out.println(anzahl);
         dslContext.update(AUSSTATTUNGSGEGENSTAND)
                 .set(AUSSTATTUNGSGEGENSTAND.NAME, name)
                 .set(AUSSTATTUNGSGEGENSTAND.ANZAHL, UInteger.valueOf(anzahl))
@@ -51,7 +48,6 @@ public class AusstattungController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/ausstattung");
 
-        System.out.println("delete: " + id);
         dslContext.deleteFrom(AUSSTATTUNGSGEGENSTAND)
                 .where(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(id)))
                 .execute();
@@ -65,7 +61,6 @@ public class AusstattungController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/ausstattung");
 
-        System.out.println("add: " + name + " " + anzahl);
         dslContext.insertInto(AUSSTATTUNGSGEGENSTAND)
                 .columns(AUSSTATTUNGSGEGENSTAND.NAME,
                         AUSSTATTUNGSGEGENSTAND.ANZAHL)

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" :>
+<head>
+    <meta charset="UTF-8">
+    <title>NEUE BESPRECHUNG</title>
+</head>
+<body>
+<h1>NEUE BESPRECHUNG</h1>
+<p><a href="/user">User Home here</a></p>
+
+<table>
+    <tbody>
+    <form action="#" th:object="${besprechungForm}" th:action="@{/user/neueBesprechung}" th:method="put">
+
+        <tr>
+            <td th:text="Thema"></td>
+            <td><input type="text" th:field="*{thema}"/></td>
+            <td th:if="${#fields.hasErrors('thema')}" th:errors="*{thema}"></td>
+        </tr>
+
+        <tr>
+            <td><label>Start:</label></td>
+            <td><input th:field="*{zeitraumStart}" type="datetime-local" value="2017-06-01T08:30"/></td>
+            <td th:if="${#fields.hasErrors('zeitraumStart')}" th:errors="*{zeitraumStart}"></td>
+        </tr>
+
+        <tr>
+            <td><label>Ende:</label></td>
+            <td><input th:field="*{zeitraumEnde}" type="datetime-local" value="2000-01-01T00:00:00"/></td>
+            <td th:if="${#fields.hasErrors('zeitraumEnde')}" th:errors="*{zeitraumEnde}"></td>
+        </tr>
+        <tr>
+            <td><label>Raum:</label></td>
+            <td>
+                <table>
+                    <thead>
+                    <tr>
+                        <td></td>
+                        <td>Ort</td>
+                        <td>AnzahlStuhl</td>
+                        <td>AnzahlTisch</td>
+                        <td>AnzahlLaptop</td>
+                        <td>Whiteboard</td>
+                        <td>Barrierefrei</td>
+                        <td>Klimaanlage</td>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <th:block th:each="raum : ${rooms}">
+                        <tr th:if="${rooms.isEmpty()}" th:text="'Keine Räume verfügbar!'"></tr>
+                        <tr>
+                            <td><input type="radio" th:field="*{raumId}" th:value="${raum.getRaumid()}" th:checked="checked"/></td>
+                            <td th:text="${raum.getOrt()}"></td>
+                            <td th:text="${raum.getAnzahlstuhl()}"></td>
+                            <td th:text="${raum.getAnzahltisch()}"></td>
+                            <td th:text="${raum.getAnzahllaptop()}"></td>
+                            <td><input type="checkbox" name="whiteboard" th:checked="${raum.getWhiteboard()}" onclick="return false;"/></td>
+                            <td><input type="checkbox" name="barrierefrei" th:checked="${raum.getBarrierefrei()}" onclick="return false;"/></td>
+                            <td><input type="checkbox" name="klimaanlage" th:checked="${raum.getKlimaanlage()}" onclick="return false;"/></td>
+                        </tr>
+                    </th:block>
+                    <tr>
+                        <td th:if="${#fields.hasErrors('raumId')}" th:errors="*{raumId}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td><label>User:</label></td>
+            <td>
+                <ul>
+                    <li th:each="user: ${userList}" th:unless="${#strings.equals(user.getPersonid(), userId)}">
+                        <input type="checkbox"
+                               th:field="*{invitedUsers}"
+                               th:value="${user.getPersonid()}"/>
+                        <label
+                                th:for="${#ids.prev('invitedUsers')}"
+                                th:text="${user.getVorname()} + ' ' + ${user.getNachname()}"></label>
+                    </li>
+                </ul>
+            </td>
+
+            <td><label>Gegenstände:</label></td>
+            <td>
+                <ul>
+                    <li th:if="${gegenstandList.isEmpty()}" th:text="Keine Gegenstände verfügbar"></li>
+                    <li th:each="gegenstand: ${gegenstandList}">
+                        <input type="checkbox"
+                               th:field="*{chosenItems}"
+                               th:value="${gegenstand.getAusstattungsgegenstandid()}"/>
+                        <label
+                                th:for="${#ids.prev('chosenItems')}"
+                                th:text="${gegenstand.getName()}"></label>
+
+                        <select th:field="*{chosenItemsCount}">
+                            <option
+                                    th:each="i : ${#numbers.sequence(1, gegenstand.getAnzahl())}"
+                                    th:value="${i}"
+                                    th:text="${i}" ></option>
+                        </select>
+                    </li>
+                </ul>
+            </td>
+        </tr>
+
+        <tr>
+            <td>
+                <button th:type="submit" th:text="Erstellen"></button>
+            </td>
+        </tr>
+    </form>
+    </tbody>
+</table>
+</body>
+</html>

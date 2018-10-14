@@ -11,7 +11,7 @@ public class ServerApplicationTests {
 
 	@Test
 	public void contextLoads() {
-		System.out.println("tested");
+
 	}
 
 }

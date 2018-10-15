@@ -7,6 +7,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.*;
 import java.time.LocalDateTime;
+import java.util.Calendar;
+import java.util.Date;
 
 @Getter
 @Setter
@@ -22,18 +24,15 @@ public class BesprechungForm {
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @FutureOrPresent
     @NotNull
-    private LocalDateTime zeitraumStart;
+    private Date zeitraumStart;
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @Future
     @NotNull
-    private LocalDateTime  zeitraumEnde;
+    private Date  zeitraumEnde;
 
     @NotNull
     private String[] invitedUsers;
-
-    @NotNull
-    private String[] chosenItems;
 
     @NotNull
     private String[] chosenItemsCount;

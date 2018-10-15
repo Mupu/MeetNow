@@ -15,6 +15,11 @@ import org.springframework.context.annotation.Bean;
 public class ServerApplication {
 
     public static void main(String[] args) {
+        /**
+         * DISABLE JOOQ BANNER  -Dorg.jooq.no-logo=true
+         */
+        System.getProperties().setProperty("org.jooq.no-logo", "true");
+
 		ConfigurableApplicationContext context = SpringApplication.run(ServerApplication.class, args);
 	}
 

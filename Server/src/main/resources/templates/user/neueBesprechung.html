@@ -46,17 +46,23 @@
                     </tr>
                     </thead>
                     <tbody>
+                    <tr th:if="${rooms.isEmpty()}">
+                        <td th:text="'Keine Räume verfügbar!'"></td>
+                    </tr>
                     <th:block th:each="raum : ${rooms}">
-                        <tr th:if="${rooms.isEmpty()}" th:text="'Keine Räume verfügbar!'"></tr>
                         <tr>
-                            <td><input type="radio" th:field="*{raumId}" th:value="${raum.getRaumid()}" th:checked="checked"/></td>
+                            <td><input type="radio" th:field="*{raumId}" th:value="${raum.getRaumid()}"
+                                       th:checked="checked"/></td>
                             <td th:text="${raum.getOrt()}"></td>
                             <td th:text="${raum.getAnzahlstuhl()}"></td>
                             <td th:text="${raum.getAnzahltisch()}"></td>
                             <td th:text="${raum.getAnzahllaptop()}"></td>
-                            <td><input type="checkbox" name="whiteboard" th:checked="${raum.getWhiteboard()}" onclick="return false;"/></td>
-                            <td><input type="checkbox" name="barrierefrei" th:checked="${raum.getBarrierefrei()}" onclick="return false;"/></td>
-                            <td><input type="checkbox" name="klimaanlage" th:checked="${raum.getKlimaanlage()}" onclick="return false;"/></td>
+                            <td><input type="checkbox" name="whiteboard" th:checked="${raum.getWhiteboard()}"
+                                       onclick="return false;"/></td>
+                            <td><input type="checkbox" name="barrierefrei" th:checked="${raum.getBarrierefrei()}"
+                                       onclick="return false;"/></td>
+                            <td><input type="checkbox" name="klimaanlage" th:checked="${raum.getKlimaanlage()}"
+                                       onclick="return false;"/></td>
                         </tr>
                     </th:block>
                     <tr>
@@ -70,6 +76,7 @@
             <td><label>User:</label></td>
             <td>
                 <ul>
+                    <li th:if="${userList.size() <= 1}"><label>Keine User verfügbar</label></li>
                     <li th:each="user: ${userList}" th:unless="${#strings.equals(user.getPersonid(), userId)}">
                         <input type="checkbox"
                                th:field="*{invitedUsers}"
@@ -84,20 +91,15 @@
             <td><label>Gegenstände:</label></td>
             <td>
                 <ul>
-                    <li th:if="${gegenstandList.isEmpty()}" th:text="Keine Gegenstände verfügbar"></li>
+                    <li th:if="${gegenstandList.isEmpty()}"><label>Keine Gegenstände verfügbar</label></li>
                     <li th:each="gegenstand: ${gegenstandList}">
-                        <input type="checkbox"
-                               th:field="*{chosenItems}"
-                               th:value="${gegenstand.getAusstattungsgegenstandid()}"/>
-                        <label
-                                th:for="${#ids.prev('chosenItems')}"
-                                th:text="${gegenstand.getName()}"></label>
+                        <label th:text="${gegenstand.get(1)}"></label>
 
                         <select th:field="*{chosenItemsCount}">
                             <option
-                                    th:each="i : ${#numbers.sequence(1, gegenstand.getAnzahl())}"
-                                    th:value="${i}"
-                                    th:text="${i}" ></option>
+                                    th:each="i : ${#numbers.sequence(0, gegenstand.get(2))}"
+                                    th:value="${gegenstand.get(0)} + ':' + ${i}"
+                                    th:text="${gegenstand.get(0)} + ':' + ${i}"></option>
                         </select>
                     </li>
                 </ul>
@@ -106,7 +108,7 @@
 
         <tr>
             <td>
-                <button th:type="submit" th:text="Erstellen"></button>
+                <button th:type="submit" th:text="'Erstellen/Update'"></button>
             </td>
         </tr>
     </form>

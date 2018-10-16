@@ -29,7 +29,7 @@ public class RaumController {
         return mv;
     }
 
-    @PostMapping("/edit")
+    @PutMapping("/edit")
     public ModelAndView edit(@RequestParam int id,
                              @RequestParam String ort,
                              @RequestParam int anzahlStuhl,
@@ -56,7 +56,7 @@ public class RaumController {
         return mv;
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ModelAndView delete(@PathVariable(name = "id") int id) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/raum");

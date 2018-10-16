@@ -27,7 +27,7 @@ public class AusstattungController {
         return mv;
     }
 
-    @PostMapping("/edit")
+    @PutMapping("/edit")
     public ModelAndView edit(@RequestParam(name = "id") int id,
                              @RequestParam(name = "name") String name,
                              @RequestParam(name = "anzahl") String anzahl) {
@@ -43,7 +43,7 @@ public class AusstattungController {
         return mv;
     }
 
-    @PostMapping("/delete/{id}")
+    @DeleteMapping("/delete/{id}")
     public ModelAndView delete(@PathVariable(name = "id") int id) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/admin/ausstattung");

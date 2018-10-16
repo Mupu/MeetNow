@@ -67,8 +67,8 @@ public class ConfirmationController {
         PersonRecord person = userDetailsService.findUserByConfimationToken(token);
         if (person != null) {
 
-
             if (!bindingResult.hasErrors()) {
+                // add user to database
                 try {
                     BenutzerRecord benutzerRecord = dslContext.insertInto(BENUTZER)
                             .columns(BENUTZER.PERSONID,

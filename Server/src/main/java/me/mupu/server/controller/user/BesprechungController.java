@@ -48,74 +48,7 @@ public class BesprechungController {
         return mv;
     }
 
-    private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
-
-        Table<BesprechungRecord> meetings= dslContext
-                .selectFrom(BESPRECHUNG)
-                .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .asTable();
-
-
-        Table<Record2<UInteger, Integer>> reservedItems = dslContext
-                .select(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID, DSL.sum(AUSLEIHE.ANZAHL).mul(-1).cast(Integer.class).as("Anzahl"))
-                .from(AUSLEIHE)
-                .leftJoin(meetings).on(AUSLEIHE.BESPRECHUNGID.eq(meetings.field(BESPRECHUNG.BESPRECHUNGID)))
-                .where(meetings.field(BESPRECHUNG.BESPRECHUNGID).isNotNull())
-                .groupBy(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID)
-                .asTable();
-
-
-        SelectJoinStep<Record2<UInteger, UInteger>> allItemsWithMaxCount = dslContext
-                .select(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID, AUSSTATTUNGSGEGENSTAND.ANZAHL)
-                .from(AUSSTATTUNGSGEGENSTAND);
-
-
-        Table<Record2<UInteger, UInteger>> combined = dslContext
-                .select(reservedItems.field(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID),
-                        reservedItems.field(AUSSTATTUNGSGEGENSTAND.ANZAHL))
-                .from(reservedItems)
-                .union(allItemsWithMaxCount)
-                .asTable();
-
-
-        SelectHavingStep<Record2<Integer, BigDecimal>> availableitems = dslContext
-                .select(combined.field("AusstattungsgegenstandId").cast(Integer.class).as("AusstattungsgegenstandId"),
-                        DSL.sum(combined.field("Anzahl").cast(Integer.class)).as("Anzahl"))
-                .from(combined)
-                .groupBy(combined.field("AusstattungsgegenstandId"))
-                ;
-
-
-        Result<Record3<UInteger, String, Integer>> listWithName = dslContext
-                .select(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID,
-                        AUSSTATTUNGSGEGENSTAND.NAME,
-                        availableitems.field("Anzahl").cast(Integer.class).as("Anzahl"))
-                .from(availableitems)
-                .leftJoin(AUSSTATTUNGSGEGENSTAND).using(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID)
-                .where(availableitems.field("Anzahl").cast(Integer.class).gt(0))
-                .fetch();
-
-        return listWithName;
-    }
-
-    private Result<RaumRecord> getAvailableRooms(Date startDate, Date endDate) {
-        Table<BesprechungRecord> bussyRooms= dslContext
-                .selectFrom(BESPRECHUNG)
-                .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .groupBy(BESPRECHUNG.RAUMID).asTable();
-
-        return dslContext
-                .select()
-                .from(RAUM)
-                .leftJoin(bussyRooms)
-                .on(bussyRooms.field(BESPRECHUNG.RAUMID).eq(RAUM.RAUMID))
-                .where(bussyRooms.field(BESPRECHUNG.RAUMID).isNull())
-                .fetchInto(RAUM);
-    }
-
-    @PutMapping()
+    @PostMapping()
     public ModelAndView neueBesprechung(@Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
 
         ModelAndView mv = new ModelAndView();
@@ -187,5 +120,72 @@ public class BesprechungController {
     @DeleteMapping()
     public ModelAndView deleteBesprechung() {
         return new ModelAndView("redirect:/user/neueBesprechung");
+    }
+
+    private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
+
+        Table<BesprechungRecord> meetings= dslContext
+                .selectFrom(BESPRECHUNG)
+                .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                .asTable();
+
+
+        Table<Record2<UInteger, Integer>> reservedItems = dslContext
+                .select(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID, DSL.sum(AUSLEIHE.ANZAHL).mul(-1).cast(Integer.class).as("Anzahl"))
+                .from(AUSLEIHE)
+                .leftJoin(meetings).on(AUSLEIHE.BESPRECHUNGID.eq(meetings.field(BESPRECHUNG.BESPRECHUNGID)))
+                .where(meetings.field(BESPRECHUNG.BESPRECHUNGID).isNotNull())
+                .groupBy(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID)
+                .asTable();
+
+
+        SelectJoinStep<Record2<UInteger, UInteger>> allItemsWithMaxCount = dslContext
+                .select(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID, AUSSTATTUNGSGEGENSTAND.ANZAHL)
+                .from(AUSSTATTUNGSGEGENSTAND);
+
+
+        Table<Record2<UInteger, UInteger>> combined = dslContext
+                .select(reservedItems.field(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID),
+                        reservedItems.field(AUSSTATTUNGSGEGENSTAND.ANZAHL))
+                .from(reservedItems)
+                .union(allItemsWithMaxCount)
+                .asTable();
+
+
+        SelectHavingStep<Record2<Integer, BigDecimal>> availableitems = dslContext
+                .select(combined.field("AusstattungsgegenstandId").cast(Integer.class).as("AusstattungsgegenstandId"),
+                        DSL.sum(combined.field("Anzahl").cast(Integer.class)).as("Anzahl"))
+                .from(combined)
+                .groupBy(combined.field("AusstattungsgegenstandId"))
+                ;
+
+
+        Result<Record3<UInteger, String, Integer>> listWithName = dslContext
+                .select(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID,
+                        AUSSTATTUNGSGEGENSTAND.NAME,
+                        availableitems.field("Anzahl").cast(Integer.class).as("Anzahl"))
+                .from(availableitems)
+                .leftJoin(AUSSTATTUNGSGEGENSTAND).using(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID)
+                .where(availableitems.field("Anzahl").cast(Integer.class).gt(0))
+                .fetch();
+
+        return listWithName;
+    }
+
+    private Result<RaumRecord> getAvailableRooms(Date startDate, Date endDate) {
+        Table<BesprechungRecord> bussyRooms= dslContext
+                .selectFrom(BESPRECHUNG)
+                .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                .groupBy(BESPRECHUNG.RAUMID).asTable();
+
+        return dslContext
+                .select()
+                .from(RAUM)
+                .leftJoin(bussyRooms)
+                .on(bussyRooms.field(BESPRECHUNG.RAUMID).eq(RAUM.RAUMID))
+                .where(bussyRooms.field(BESPRECHUNG.RAUMID).isNull())
+                .fetchInto(RAUM);
     }
 }

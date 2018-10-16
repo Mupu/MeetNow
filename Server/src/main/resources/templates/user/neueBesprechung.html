@@ -10,7 +10,7 @@
 
 <table>
     <tbody>
-    <form action="#" th:object="${besprechungForm}" th:action="@{/user/neueBesprechung}" th:method="put">
+    <form action="#" th:object="${besprechungForm}" th:action="@{/user/neueBesprechung}" th:method="post">
 
         <tr>
             <td th:text="Thema"></td>
@@ -99,7 +99,7 @@
                             <option
                                     th:each="i : ${#numbers.sequence(0, gegenstand.get(2))}"
                                     th:value="${gegenstand.get(0)} + ':' + ${i}"
-                                    th:text="${gegenstand.get(0)} + ':' + ${i}"></option>
+                                    th:text="${i}"></option>
                         </select>
                     </li>
                 </ul>

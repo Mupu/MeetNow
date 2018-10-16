@@ -55,6 +55,7 @@ public class RegistrationController {
         if (!bindingResult.hasErrors()) {
             PersonRecord person;
             try {
+                // add person to database
                 person = dslContext.insertInto(PERSON)
                         .columns(PERSON.VORNAME,
                                 PERSON.NACHNAME,

@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Besprechung extends TableImpl<BesprechungRecord> {
 
-    private static final long serialVersionUID = 1453162187;
+    private static final long serialVersionUID = 1206595825;
 
     /**
      * The reference instance of <code>meetnow.besprechung</code>
@@ -68,9 +68,9 @@ public class Besprechung extends TableImpl<BesprechungRecord> {
     public final TableField<BesprechungRecord, UInteger> RAUMID = createField("RaumId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
 
     /**
-     * The column <code>meetnow.besprechung.BesitzerId</code>.
+     * The column <code>meetnow.besprechung.BesitzerPId</code>.
      */
-    public final TableField<BesprechungRecord, UInteger> BESITZERID = createField("BesitzerId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
+    public final TableField<BesprechungRecord, UInteger> BESITZERPID = createField("BesitzerPId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
 
     /**
      * The column <code>meetnow.besprechung.Thema</code>.
@@ -172,8 +172,8 @@ public class Besprechung extends TableImpl<BesprechungRecord> {
         return new Raum(this, Keys.BESPRECHUNG_IBFK_2);
     }
 
-    public Benutzer benutzer() {
-        return new Benutzer(this, Keys.BESPRECHUNG_IBFK_1);
+    public Person person() {
+        return new Person(this, Keys.BESPRECHUNG_IBFK_1);
     }
 
     /**

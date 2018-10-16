@@ -30,7 +30,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> implements Record6<UInteger, UInteger, UInteger, String, Timestamp, Timestamp> {
 
-    private static final long serialVersionUID = -2092754701;
+    private static final long serialVersionUID = -1289714295;
 
     /**
      * Setter for <code>meetnow.besprechung.BesprechungId</code>.
@@ -63,17 +63,17 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
     }
 
     /**
-     * Setter for <code>meetnow.besprechung.BesitzerId</code>.
+     * Setter for <code>meetnow.besprechung.BesitzerPId</code>.
      */
-    public BesprechungRecord setBesitzerid(UInteger value) {
+    public BesprechungRecord setBesitzerpid(UInteger value) {
         set(2, value);
         return this;
     }
 
     /**
-     * Getter for <code>meetnow.besprechung.BesitzerId</code>.
+     * Getter for <code>meetnow.besprechung.BesitzerPId</code>.
      */
-    public UInteger getBesitzerid() {
+    public UInteger getBesitzerpid() {
         return (UInteger) get(2);
     }
 
@@ -175,7 +175,7 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
      */
     @Override
     public Field<UInteger> field3() {
-        return Besprechung.BESPRECHUNG.BESITZERID;
+        return Besprechung.BESPRECHUNG.BESITZERPID;
     }
 
     /**
@@ -223,7 +223,7 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
      */
     @Override
     public UInteger component3() {
-        return getBesitzerid();
+        return getBesitzerpid();
     }
 
     /**
@@ -271,7 +271,7 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
      */
     @Override
     public UInteger value3() {
-        return getBesitzerid();
+        return getBesitzerpid();
     }
 
     /**
@@ -321,7 +321,7 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
      */
     @Override
     public BesprechungRecord value3(UInteger value) {
-        setBesitzerid(value);
+        setBesitzerpid(value);
         return this;
     }
 
@@ -380,12 +380,12 @@ public class BesprechungRecord extends UpdatableRecordImpl<BesprechungRecord> im
     /**
      * Create a detached, initialised BesprechungRecord
      */
-    public BesprechungRecord(UInteger besprechungid, UInteger raumid, UInteger besitzerid, String thema, Timestamp zeitraumstart, Timestamp zeitraumende) {
+    public BesprechungRecord(UInteger besprechungid, UInteger raumid, UInteger besitzerpid, String thema, Timestamp zeitraumstart, Timestamp zeitraumende) {
         super(Besprechung.BESPRECHUNG);
 
         set(0, besprechungid);
         set(1, raumid);
-        set(2, besitzerid);
+        set(2, besitzerpid);
         set(3, thema);
         set(4, zeitraumstart);
         set(5, zeitraumende);

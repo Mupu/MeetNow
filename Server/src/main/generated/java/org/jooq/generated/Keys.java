@@ -81,8 +81,8 @@ public class Keys {
     public static final ForeignKey<AusleiheRecord, AusstattungsgegenstandRecord> AUSLEIHE_IBFK_2 = ForeignKeys0.AUSLEIHE_IBFK_2;
     public static final ForeignKey<BenutzerRecord, PersonRecord> BENUTZER_IBFK_1 = ForeignKeys0.BENUTZER_IBFK_1;
     public static final ForeignKey<BesprechungRecord, RaumRecord> BESPRECHUNG_IBFK_2 = ForeignKeys0.BESPRECHUNG_IBFK_2;
-    public static final ForeignKey<BesprechungRecord, BenutzerRecord> BESPRECHUNG_IBFK_1 = ForeignKeys0.BESPRECHUNG_IBFK_1;
-    public static final ForeignKey<TeilnahmeRecord, BenutzerRecord> TEILNAHME_IBFK_1 = ForeignKeys0.TEILNAHME_IBFK_1;
+    public static final ForeignKey<BesprechungRecord, PersonRecord> BESPRECHUNG_IBFK_1 = ForeignKeys0.BESPRECHUNG_IBFK_1;
+    public static final ForeignKey<TeilnahmeRecord, PersonRecord> TEILNAHME_IBFK_1 = ForeignKeys0.TEILNAHME_IBFK_1;
     public static final ForeignKey<TeilnahmeRecord, BesprechungRecord> TEILNAHME_IBFK_2 = ForeignKeys0.TEILNAHME_IBFK_2;
     public static final ForeignKey<UserRoleRecord, BenutzerRecord> ROLE_IBFK_1 = ForeignKeys0.ROLE_IBFK_1;
     public static final ForeignKey<UserRoleRecord, RoleRecord> ROLE_IBFK_2 = ForeignKeys0.ROLE_IBFK_2;
@@ -111,7 +111,7 @@ public class Keys {
         public static final UniqueKey<PersonRecord> KEY_PERSON_EMAIL = Internal.createUniqueKey(Person.PERSON, "KEY_person_Email", Person.PERSON.EMAIL);
         public static final UniqueKey<RaumRecord> KEY_RAUM_PRIMARY = Internal.createUniqueKey(Raum.RAUM, "KEY_raum_PRIMARY", Raum.RAUM.RAUMID);
         public static final UniqueKey<RoleRecord> KEY_ROLE_PRIMARY = Internal.createUniqueKey(Role.ROLE, "KEY_role_PRIMARY", Role.ROLE.ROLEID);
-        public static final UniqueKey<TeilnahmeRecord> KEY_TEILNAHME_PRIMARY = Internal.createUniqueKey(Teilnahme.TEILNAHME, "KEY_teilnahme_PRIMARY", Teilnahme.TEILNAHME.BENUTZERID, Teilnahme.TEILNAHME.BESPRECHUNGID);
+        public static final UniqueKey<TeilnahmeRecord> KEY_TEILNAHME_PRIMARY = Internal.createUniqueKey(Teilnahme.TEILNAHME, "KEY_teilnahme_PRIMARY", Teilnahme.TEILNAHME.PERSONID, Teilnahme.TEILNAHME.BESPRECHUNGID);
         public static final UniqueKey<UserRoleRecord> KEY_USER_ROLE_PRIMARY = Internal.createUniqueKey(UserRole.USER_ROLE, "KEY_user_role_PRIMARY", UserRole.USER_ROLE.BENUTZERID, UserRole.USER_ROLE.ROLEID);
     }
 
@@ -120,8 +120,8 @@ public class Keys {
         public static final ForeignKey<AusleiheRecord, AusstattungsgegenstandRecord> AUSLEIHE_IBFK_2 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_AUSSTATTUNGSGEGENSTAND_PRIMARY, Ausleihe.AUSLEIHE, "ausleihe_ibfk_2", Ausleihe.AUSLEIHE.AUSSTATTUNGSGEGENSTANDID);
         public static final ForeignKey<BenutzerRecord, PersonRecord> BENUTZER_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_PERSON_PRIMARY, Benutzer.BENUTZER, "benutzer_ibfk_1", Benutzer.BENUTZER.PERSONID);
         public static final ForeignKey<BesprechungRecord, RaumRecord> BESPRECHUNG_IBFK_2 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_RAUM_PRIMARY, Besprechung.BESPRECHUNG, "besprechung_ibfk_2", Besprechung.BESPRECHUNG.RAUMID);
-        public static final ForeignKey<BesprechungRecord, BenutzerRecord> BESPRECHUNG_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_BENUTZER_PRIMARY, Besprechung.BESPRECHUNG, "besprechung_ibfk_1", Besprechung.BESPRECHUNG.BESITZERID);
-        public static final ForeignKey<TeilnahmeRecord, BenutzerRecord> TEILNAHME_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_BENUTZER_PRIMARY, Teilnahme.TEILNAHME, "teilnahme_ibfk_1", Teilnahme.TEILNAHME.BENUTZERID);
+        public static final ForeignKey<BesprechungRecord, PersonRecord> BESPRECHUNG_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_PERSON_PRIMARY, Besprechung.BESPRECHUNG, "besprechung_ibfk_1", Besprechung.BESPRECHUNG.BESITZERPID);
+        public static final ForeignKey<TeilnahmeRecord, PersonRecord> TEILNAHME_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_PERSON_PRIMARY, Teilnahme.TEILNAHME, "teilnahme_ibfk_1", Teilnahme.TEILNAHME.PERSONID);
         public static final ForeignKey<TeilnahmeRecord, BesprechungRecord> TEILNAHME_IBFK_2 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_BESPRECHUNG_PRIMARY, Teilnahme.TEILNAHME, "teilnahme_ibfk_2", Teilnahme.TEILNAHME.BESPRECHUNGID);
         public static final ForeignKey<UserRoleRecord, BenutzerRecord> ROLE_IBFK_1 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_BENUTZER_PRIMARY, UserRole.USER_ROLE, "role_ibfk_1", UserRole.USER_ROLE.BENUTZERID);
         public static final ForeignKey<UserRoleRecord, RoleRecord> ROLE_IBFK_2 = Internal.createForeignKey(org.jooq.generated.Keys.KEY_ROLE_PRIMARY, UserRole.USER_ROLE, "role_ibfk_2", UserRole.USER_ROLE.ROLEID);

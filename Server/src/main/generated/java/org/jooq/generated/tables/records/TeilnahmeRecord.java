@@ -27,20 +27,20 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implements Record2<UInteger, UInteger> {
 
-    private static final long serialVersionUID = 1645599671;
+    private static final long serialVersionUID = 1762291895;
 
     /**
-     * Setter for <code>meetnow.teilnahme.BenutzerId</code>.
+     * Setter for <code>meetnow.teilnahme.PersonId</code>.
      */
-    public TeilnahmeRecord setBenutzerid(UInteger value) {
+    public TeilnahmeRecord setPersonid(UInteger value) {
         set(0, value);
         return this;
     }
 
     /**
-     * Getter for <code>meetnow.teilnahme.BenutzerId</code>.
+     * Getter for <code>meetnow.teilnahme.PersonId</code>.
      */
-    public UInteger getBenutzerid() {
+    public UInteger getPersonid() {
         return (UInteger) get(0);
     }
 
@@ -96,7 +96,7 @@ public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implem
      */
     @Override
     public Field<UInteger> field1() {
-        return Teilnahme.TEILNAHME.BENUTZERID;
+        return Teilnahme.TEILNAHME.PERSONID;
     }
 
     /**
@@ -112,7 +112,7 @@ public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implem
      */
     @Override
     public UInteger component1() {
-        return getBenutzerid();
+        return getPersonid();
     }
 
     /**
@@ -128,7 +128,7 @@ public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implem
      */
     @Override
     public UInteger value1() {
-        return getBenutzerid();
+        return getPersonid();
     }
 
     /**
@@ -144,7 +144,7 @@ public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implem
      */
     @Override
     public TeilnahmeRecord value1(UInteger value) {
-        setBenutzerid(value);
+        setPersonid(value);
         return this;
     }
 
@@ -181,10 +181,10 @@ public class TeilnahmeRecord extends UpdatableRecordImpl<TeilnahmeRecord> implem
     /**
      * Create a detached, initialised TeilnahmeRecord
      */
-    public TeilnahmeRecord(UInteger benutzerid, UInteger besprechungid) {
+    public TeilnahmeRecord(UInteger personid, UInteger besprechungid) {
         super(Teilnahme.TEILNAHME);
 
-        set(0, benutzerid);
+        set(0, personid);
         set(1, besprechungid);
     }
 }

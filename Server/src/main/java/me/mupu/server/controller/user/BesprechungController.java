@@ -140,13 +140,13 @@ public class BesprechungController {
             BesprechungRecord besprechung = dslContext
                     .insertInto(BESPRECHUNG)
                     .columns(BESPRECHUNG.RAUMID,
-                            BESPRECHUNG.BESITZERID,
+                            BESPRECHUNG.BESITZERPID,
                             BESPRECHUNG.THEMA,
                             BESPRECHUNG.ZEITRAUMSTART,
                             BESPRECHUNG.ZEITRAUMENDE
                     )
                     .values(UInteger.valueOf(besprechungForm.getRaumId()),
-                            user.getBenutzerid(),
+                            user.getPersonid(),
                             besprechungForm.getThema(),
                             Timestamp.valueOf(sdf.format(besprechungForm.getZeitraumStart())),
                             Timestamp.valueOf(sdf.format(besprechungForm.getZeitraumEnde()))
@@ -156,7 +156,7 @@ public class BesprechungController {
 
             // add termine
             dslContext.insertInto(TEILNAHME)
-                    .values(user.getBenutzerid(), besprechung.getBesprechungid())
+                    .values(user.getPersonid(), besprechung.getBesprechungid())
                     .execute();
             for (String u :
                     besprechungForm.getInvitedUsers()) {

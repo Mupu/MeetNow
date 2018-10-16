@@ -21,7 +21,7 @@
     <th:block th:each="item : ${items}">
         <tr th:if="${items.isEmpty()}" th:text="No entries found!"></tr>
         <tr>
-            <form action="#" th:action="@{ausstattung/edit}" method="post">
+            <form action="#" th:action="@{ausstattung/edit}" th:method="put">
                 <td><input type="text" name="id" th:value="${item.getAusstattungsgegenstandid()}" readonly /></td>
                 <td><input type="text" name="name" th:value="${item.getName()}" /></td>
                 <td><input type="text" name="anzahl" th:value="${item.getAnzahl()}" /></td>

@@ -50,7 +50,7 @@ public class TerminController {
                         RAUM.WHITEBOARD,
                         RAUM.BARRIEREFREI,
                         RAUM.KLIMAANLAGE,
-                        BESPRECHUNG.BESITZERID,
+                        BESPRECHUNG.BESITZERPID,
                         PERSON.VORNAME.as("BesitzerVorname"),
                         PERSON.NACHNAME.as("BesitzerNachname"),
                         PERSON.EMAIL.as("BesitzerEmail")
@@ -58,9 +58,8 @@ public class TerminController {
                 .from(TEILNAHME)
                 .leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
                 .leftJoin(RAUM).using(BESPRECHUNG.RAUMID)
-                .leftJoin(BENUTZER).on(BESPRECHUNG.BESITZERID.eq(BENUTZER.BENUTZERID))
-                .leftJoin(PERSON).using(BENUTZER.PERSONID)
-                .where(TEILNAHME.BENUTZERID.eq(user.getBenutzerid()))
+                .leftJoin(PERSON).using(TEILNAHME.PERSONID)
+                .where(TEILNAHME.PERSONID.eq(user.getPersonid()))
                 .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.currentTimestamp()))
                 .orderBy(BESPRECHUNG.ZEITRAUMSTART.asc(), BESPRECHUNG.ZEITRAUMENDE.asc())
                 .fetch();
@@ -75,8 +74,7 @@ public class TerminController {
                             PERSON.NACHNAME
                             )
                             .from(TEILNAHME)
-                            .leftJoin(BENUTZER).using(BENUTZER.BENUTZERID)
-                            .leftJoin(PERSON).using(BENUTZER.PERSONID)
+                            .leftJoin(PERSON).using(TEILNAHME.PERSONID)
                             .where(TEILNAHME.BESPRECHUNGID.eq(r.getValue(BESPRECHUNG.BESPRECHUNGID)))
                             .orderBy(PERSON.VORNAME, PERSON.NACHNAME)
                             .fetch();

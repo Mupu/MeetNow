@@ -40,7 +40,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Teilnahme extends TableImpl<TeilnahmeRecord> {
 
-    private static final long serialVersionUID = -1443997347;
+    private static final long serialVersionUID = 1595511165;
 
     /**
      * The reference instance of <code>meetnow.teilnahme</code>
@@ -56,9 +56,9 @@ public class Teilnahme extends TableImpl<TeilnahmeRecord> {
     }
 
     /**
-     * The column <code>meetnow.teilnahme.BenutzerId</code>.
+     * The column <code>meetnow.teilnahme.PersonId</code>.
      */
-    public final TableField<TeilnahmeRecord, UInteger> BENUTZERID = createField("BenutzerId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
+    public final TableField<TeilnahmeRecord, UInteger> PERSONID = createField("PersonId", org.jooq.impl.SQLDataType.INTEGERUNSIGNED.nullable(false), this, "");
 
     /**
      * The column <code>meetnow.teilnahme.BesprechungId</code>.
@@ -111,7 +111,7 @@ public class Teilnahme extends TableImpl<TeilnahmeRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX1, Indexes.TEILNAHME_BENUTZER_HAS_BESPRECHUNG_FKINDEX2, Indexes.TEILNAHME_PRIMARY);
+        return Arrays.<Index>asList(Indexes.TEILNAHME_PERSON_HAS_BESPRECHUNG_FKINDEX1, Indexes.TEILNAHME_PERSON_HAS_BESPRECHUNG_FKINDEX2, Indexes.TEILNAHME_PRIMARY);
     }
 
     /**
@@ -138,8 +138,8 @@ public class Teilnahme extends TableImpl<TeilnahmeRecord> {
         return Arrays.<ForeignKey<TeilnahmeRecord, ?>>asList(Keys.TEILNAHME_IBFK_1, Keys.TEILNAHME_IBFK_2);
     }
 
-    public Benutzer benutzer() {
-        return new Benutzer(this, Keys.TEILNAHME_IBFK_1);
+    public Person person() {
+        return new Person(this, Keys.TEILNAHME_IBFK_1);
     }
 
     public Besprechung besprechung() {

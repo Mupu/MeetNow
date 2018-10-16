@@ -54,14 +54,14 @@ CREATE TABLE IF NOT EXISTS Benutzer (
 CREATE TABLE IF NOT EXISTS Besprechung (
    BesprechungId INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	RaumId INT(10) UNSIGNED NOT NULL,
-	BesitzerId INT(10) UNSIGNED NOT NULL,
+	BesitzerPId INT(10) UNSIGNED NOT NULL,
 	Thema CHAR(32) NOT NULL,
 	zeitraumStart TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	zeitraumEnde TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (BesprechungId),
-	INDEX Besprechung_FKIndex1 (BesitzerId),
+	INDEX Besprechung_FKIndex1 (BesitzerPId),
 	INDEX Besprechung_FKIndex2 (RaumId),
-	CONSTRAINT besprechung_ibfk_1 FOREIGN KEY (BesitzerId) REFERENCES benutzer (BenutzerId) ON UPDATE CASCADE ON DELETE CASCADE,
+	CONSTRAINT besprechung_ibfk_1 FOREIGN KEY (BesitzerPId) REFERENCES person (PersonId) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT besprechung_ibfk_2 FOREIGN KEY (RaumId) REFERENCES raum (RaumId) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
@@ -77,12 +77,12 @@ CREATE TABLE IF NOT EXISTS ausleihe (
 );
 
 CREATE TABLE IF NOT EXISTS teilnahme (
-   BenutzerId INT(10) UNSIGNED NOT NULL,
+   PersonId INT(10) UNSIGNED NOT NULL,
 	BesprechungId INT(10) UNSIGNED NOT NULL,
-	PRIMARY KEY (BenutzerId, BesprechungId),
-	INDEX Benutzer_has_Besprechung_FKIndex1 (BenutzerId),
-	INDEX Benutzer_has_Besprechung_FKIndex2 (BesprechungId),
-	CONSTRAINT teilnahme_ibfk_1 FOREIGN KEY (BenutzerId) REFERENCES benutzer (BenutzerId) ON UPDATE CASCADE ON DELETE CASCADE,
+	PRIMARY KEY (PersonId, BesprechungId),
+	INDEX Person_has_Besprechung_FKIndex1 (PersonId),
+	INDEX Person_has_Besprechung_FKIndex2 (BesprechungId),
+	CONSTRAINT teilnahme_ibfk_1 FOREIGN KEY (PersonId) REFERENCES person (PersonId) ON UPDATE CASCADE ON DELETE CASCADE,
 	CONSTRAINT teilnahme_ibfk_2 FOREIGN KEY (BesprechungId) REFERENCES besprechung (BesprechungId) ON UPDATE CASCADE ON DELETE CASCADE
 );
 

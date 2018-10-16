@@ -6,7 +6,9 @@ import org.jooq.*;
 import org.jooq.generated.tables.records.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
+import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -15,40 +17,63 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
+import java.io.FileNotFoundException;
 import java.math.BigDecimal;
+import java.nio.file.NoSuchFileException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
+import java.util.*;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static org.jooq.generated.Tables.*;
+import static org.jooq.impl.DSL.inline;
 
 @Controller
 @Secured("ROLE_USER")
-@RequestMapping("user/neueBesprechung")
+@RequestMapping("user/")
 public class BesprechungController {
 
     @Autowired
     private DSLContext dslContext;
 
-    @GetMapping
+    /**
+     * ###################################
+     * #        neue Besprechung
+     * *##################################
+     */
+
+    @GetMapping("neueBesprechung")
     public ModelAndView besprechungForm(BesprechungForm besprechungForm) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/neueBesprechung");
-        mv.addObject("besprechungForm", besprechungForm);
+
 
         // get current logged in user
         BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        mv.addObject("userList", dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch());
+        // default start end date
+        Calendar c = Calendar.getInstance();
+        besprechungForm.setZeitraumStart(c.getTime());
+
+        c.add(Calendar.HOUR, 1);
+        besprechungForm.setZeitraumEnde(c.getTime());
+
+        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // remove yourself from list
+        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
+
+        mv.addObject("besprechungForm", besprechungForm);
+        mv.addObject("userList", userList);
         mv.addObject("userId", user.getPersonid().intValue());
         mv.addObject("rooms", getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
         mv.addObject("gegenstandList", getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
         return mv;
     }
 
-    @PostMapping()
+    @PostMapping("neueBesprechung")
     public ModelAndView neueBesprechung(@Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
 
         ModelAndView mv = new ModelAndView();
@@ -110,21 +135,202 @@ public class BesprechungController {
             }
         }
 
-        mv.addObject("userList", dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch());
+        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // remove yourself from list
+        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
+
+        mv.addObject("userList", userList);
         mv.addObject("userId", user.getPersonid().intValue());
         mv.addObject("gegenstandList", getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
         mv.addObject("rooms", getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
         return mv;
     }
 
-    @DeleteMapping()
-    public ModelAndView deleteBesprechung() {
+
+    /**
+     * ###################################
+     * #        edit Besprechung
+     * *##################################
+     */
+
+    @GetMapping("editBesprechung/{besprechungId}")
+    public ModelAndView getEditBesprechung(@PathVariable int besprechungId, BesprechungForm besprechungForm) {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("user/editBesprechung");
+
+        // get current logged in user
+        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+
+        // check if user owns that meeting
+        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId)))
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))
+                .fetchSingle();
+
+        // fill in values
+        besprechungForm.setThema(besprechung.getThema());
+        besprechungForm.setZeitraumStart(besprechung.getZeitraumstart());
+        besprechungForm.setZeitraumEnde(besprechung.getZeitraumende());
+        // preselect current room as default
+        besprechungForm.setRaumId(besprechung.getRaumid().intValue());
+
+        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
+        // add current room to the list as current room
+        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
+
+        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // remove yourself from list
+        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
+
+        // get invited users
+        Result<Record1<UInteger>> invitedUsers = dslContext
+                .select(TEILNAHME.PERSONID)
+                .from(TEILNAHME)
+                .where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                .and(TEILNAHME.PERSONID.ne(user.getPersonid())) // remove the owner from the list
+                .fetch();
+        // converts UIntegers to String stream
+        Stream<String> stream = invitedUsers.stream().map(s -> String.valueOf(((UInteger) s.get(0)).intValue()));
+        // converts stream to array and add it as default to besprechungForm
+        besprechungForm.setInvitedUsers(stream.toArray(String[]::new));
+
+        //             id        name    anzahl
+        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
+
+        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        // add currentlyReservedItems to available to get complete selection for this meeting
+        currentlyReservedItems.forEach(ri ->
+                availableItems.forEach(ai -> {
+                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
+                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
+                    }
+                })
+        );
+
+        // convert stream to string stream
+        Stream<String> ris = currentlyReservedItems.stream().map(ri ->
+                String.valueOf(ri.getAusstattungsgegenstandid()) + ":" + String.valueOf(ri.getAnzahl())
+        );
+
+        // add preselected items
+        besprechungForm.setChosenItemsCount(ris.toArray(String[]::new));
+
+        mv.addObject("besprechungForm", besprechungForm);
+        mv.addObject("rooms", rooms);
+        mv.addObject("gegenstandList", availableItems);
+        mv.addObject("userList", userList);
+        mv.addObject("bId", besprechung.getBesprechungid());
+        return mv;
+    }
+
+    @PutMapping("editBesprechung/{besprechungId}")
+    public ModelAndView editBesprechung(@PathVariable int besprechungId, @Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("user/editBesprechung");
+
+        // get current logged in user
+        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+
+
+        // check if user owns that meeting
+        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))                 // ist besitzer ?
+                .fetchSingle();
+
+        if (besprechungForm.getZeitraumStart() == null || besprechungForm.getZeitraumEnde() == null
+                || besprechungForm.getZeitraumStart().compareTo(besprechungForm.getZeitraumEnde()) >= 0)
+            bindingResult.rejectValue("zeitraumEnde", "zeitraumEnde", "Endzeitpunkt muss nach Startzeitpunkt liegen");
+
+
+        if (!bindingResult.hasErrors()) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+            dslContext.update(BESPRECHUNG)
+                    .set(BESPRECHUNG.THEMA, besprechungForm.getThema())
+                    .set(BESPRECHUNG.ZEITRAUMSTART, Timestamp.valueOf(sdf.format(besprechungForm.getZeitraumStart())))
+                    .set(BESPRECHUNG.ZEITRAUMENDE, Timestamp.valueOf(sdf.format(besprechungForm.getZeitraumEnde())))
+                    .set(BESPRECHUNG.RAUMID, UInteger.valueOf(besprechungForm.getRaumId()))
+                    .where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                    .execute();
+
+            // this is all previously invited users but will be filtered to removedUsers
+            Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+            Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () -> removedUsers.stream().filter(us ->
+                    Arrays.stream(besprechungForm.getInvitedUsers()).anyMatch(b ->
+                            us.getPersonid().intValue() == Integer.valueOf(b)
+                    )
+            );
+            // remove yourself from list
+            removedUsers.removeIf(u -> u.getPersonid().intValue() == user.getPersonid().intValue());
+            // remove users that are on both lists ( they stay invited and are not interesting to us )
+            removedUsers.removeIf(u ->
+                    stillInvitedUsers.get().anyMatch(x ->
+                            x.getPersonid().intValue() == u.getPersonid().intValue()
+                    )
+            );
+
+            ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
+
+            newlyAddedUsers.removeIf(u ->
+                    stillInvitedUsers.get().anyMatch(x ->
+                            x.getPersonid().intValue() == Integer.valueOf(u)
+                    )
+            );
+
+
+
+            System.out.println("jetzt angehakt");
+            System.out.println(Arrays.toString(besprechungForm.getInvitedUsers()));
+
+            System.out.println("removed:");
+            System.out.println(removedUsers);
+
+            System.out.println("added:");
+            System.out.println(Arrays.toString(newlyAddedUsers.toArray()));
+            System.out.println("\n");
+        }
+
+        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
+        // add current room to the list as current room
+        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
+
+        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // remove yourself from list
+        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
+
+        //             id        name    anzahl
+        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
+
+        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        // add currentlyReservedItems to available to get complete selection for this meeting
+        currentlyReservedItems.forEach(ri ->
+                availableItems.forEach(ai -> {
+                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
+                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
+                    }
+                })
+        );
+
+        mv.addObject("besprechungForm", besprechungForm);
+        mv.addObject("rooms", rooms);
+        mv.addObject("gegenstandList", availableItems);
+        mv.addObject("userList", userList);
+        mv.addObject("bId", besprechung.getBesprechungid());
+        return mv;
+    }
+
+    @DeleteMapping("deleteBesprechung/{besprechungId}")
+    public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
         return new ModelAndView("redirect:/user/neueBesprechung");
     }
 
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
 
-        Table<BesprechungRecord> meetings= dslContext
+        Table<BesprechungRecord> meetings = dslContext
                 .selectFrom(BESPRECHUNG)
                 .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
                 .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
@@ -157,8 +363,7 @@ public class BesprechungController {
                 .select(combined.field("AusstattungsgegenstandId").cast(Integer.class).as("AusstattungsgegenstandId"),
                         DSL.sum(combined.field("Anzahl").cast(Integer.class)).as("Anzahl"))
                 .from(combined)
-                .groupBy(combined.field("AusstattungsgegenstandId"))
-                ;
+                .groupBy(combined.field("AusstattungsgegenstandId"));
 
 
         Result<Record3<UInteger, String, Integer>> listWithName = dslContext
@@ -174,7 +379,7 @@ public class BesprechungController {
     }
 
     private Result<RaumRecord> getAvailableRooms(Date startDate, Date endDate) {
-        Table<BesprechungRecord> bussyRooms= dslContext
+        Table<BesprechungRecord> bussyRooms = dslContext
                 .selectFrom(BESPRECHUNG)
                 .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
                 .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))

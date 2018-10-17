@@ -29,6 +29,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import static org.jooq.generated.Tables.*;
+import static org.jooq.impl.DSL.ifnull;
 import static org.jooq.impl.DSL.inline;
 
 @Controller
@@ -268,7 +269,7 @@ public class BesprechungController {
 
             // newly added users
             ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
-            // remove users from list that are were invited before
+            // remove users that are were invited before from list
             newlyAddedUsers.removeIf(nau ->
                     stillInvitedUsers.get().anyMatch(siu ->
                             siu.getPersonid().intValue() == Integer.valueOf(nau)
@@ -285,8 +286,6 @@ public class BesprechungController {
             );
 
 
-
-
             removedUsers.forEach(ru -> {
                 // replace a removed users id with an added one
                 if (newlyAddedUsers.size() > 0) {
@@ -300,19 +299,92 @@ public class BesprechungController {
                 } else // delete user
                     dslContext.deleteFrom(TEILNAHME)
                             .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
-                            .and(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                            .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
                             .execute();
             });
 
             // add remaining newly added users
             newlyAddedUsers.forEach(nau ->
-                        dslContext.insertInto(TEILNAHME)
-                                .values(UInteger.valueOf(nau),
-                                        besprechung.getBesprechungid())
-                                .execute()
+                    dslContext.insertInto(TEILNAHME)
+                            .values(UInteger.valueOf(nau),
+                                    besprechung.getBesprechungid())
+                            .execute()
             );
 
+
             System.out.println(Arrays.toString(besprechungForm.getChosenItemsCount()));
+
+
+            // used to check later if the item needs to be updated or inserted
+            Result<AusleiheRecord> previousItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+
+            // better useble list then the string arrays
+            Map<Integer, Integer> besprechungChosenItemsMap = new HashMap<>();
+            for (String s : besprechungForm.getChosenItemsCount()) {
+                String[] parts = s.split(":");
+//                if (removedItems.stream().anyMatch(agId -> agId.getAusstattungsgegenstandid().intValue() == Integer.valueOf(parts[0])))
+                besprechungChosenItemsMap.put(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+            }
+
+            // is previously selected items but will be filtered to removedItems
+            Result<AusleiheRecord> removedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+            Supplier<Stream<AusleiheRecord>> stillSelectedItems = () ->
+                    // still all previously selected items with count
+                    removedItems.stream().filter(ri ->
+                            besprechungChosenItemsMap.keySet().stream().anyMatch(psiks ->
+                                    ri.getAusstattungsgegenstandid().intValue() == psiks
+                            )
+                    );
+
+            // newly added items
+            ArrayList<Integer> newlyAddedItems = new ArrayList<>(besprechungChosenItemsMap.keySet());
+            // remove items that are were selected before from list
+            newlyAddedItems.removeIf(nai ->
+                    stillSelectedItems.get().anyMatch(ssi ->
+                            ssi.getAusstattungsgegenstandid().intValue() == nai
+                                    && (ssi.getAnzahl().intValue() == besprechungChosenItemsMap.get(nai))
+                                    || besprechungChosenItemsMap.get(nai) == 0
+                    )
+            );
+
+            // remove items that are on both lists ( they stay selected and are not interesting to us )
+            removedItems.removeIf(ri ->
+                    removedItems.stream().noneMatch(nai -> nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue())
+                            || besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
+            );
+
+            System.out.println("new");
+            System.out.println(newlyAddedItems);
+
+            System.out.println("removed");
+            System.out.println(removedItems);
+
+            System.out.println("previous2\n" + previousItems);
+
+            removedItems.forEach(ri -> {
+                // delete user
+                dslContext.deleteFrom(AUSLEIHE)
+                        .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(ri.getAusstattungsgegenstandid()))
+                        .and(AUSLEIHE.BESPRECHUNGID.eq(ri.getBesprechungid()))
+                        .execute();
+            });
+
+            // add remaining newly added users
+            newlyAddedItems.forEach(nai -> {
+                if (previousItems.stream().anyMatch(pi -> pi.getAusstattungsgegenstandid().intValue() == nai))
+                    dslContext.update(AUSLEIHE)
+                            .set(AUSLEIHE.ANZAHL, UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
+                            .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(nai)))
+                            .execute();
+                else
+                    dslContext.insertInto(AUSLEIHE)
+                            .values(besprechung.getBesprechungid(),
+                                    UInteger.valueOf(nai),
+                                    UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
+                            .execute();
+            });
         }
 
         Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
@@ -347,7 +419,20 @@ public class BesprechungController {
 
     @DeleteMapping("deleteBesprechung/{besprechungId}")
     public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
-        return new ModelAndView("redirect:/user/neueBesprechung");
+
+        // get current logged in user
+        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+
+        // check if user owns that meeting
+        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                .fetchSingle();
+
+        dslContext.deleteFrom(BESPRECHUNG).where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid())).execute();
+        System.out.println("DELETE BESPRECHUNG" + besprechung.getBesprechungid());
+        return new ModelAndView("redirect:/user/termine");
     }
 
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {

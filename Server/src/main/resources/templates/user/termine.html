@@ -16,7 +16,9 @@
     </thead>
 
     <tbody>
-    <tr><td  th:if="${termineMitRaumUndBesitzer.isEmpty()}">Keine Termine</td></tr>
+    <tr>
+        <td th:if="${termineMitRaumUndBesitzer.isEmpty()}">Keine Termine</td>
+    </tr>
     <th:block th:each="item : ${termineMitRaumUndBesitzer}">
         <tr>
             <td>
@@ -71,9 +73,9 @@
                                             </ul>
                                         </td>
                                         <td>
-                                                <label th:text="${item.getValue('BesitzerVorname')}"></label><br>
-                                                <label th:text="${item.getValue('BesitzerNachname')}"></label><br>
-                                                <label th:text="${item.getValue('BesitzerEmail')}"></label><br>
+                                            <label th:text="${item.getValue('BesitzerVorname')}"></label><br>
+                                            <label th:text="${item.getValue('BesitzerNachname')}"></label><br>
+                                            <label th:text="${item.getValue('BesitzerEmail')}"></label><br>
                                         </td>
                                     </tr>
                                     </tbody>
@@ -88,7 +90,11 @@
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <tr><td  th:if="${ausstattungsgegenstandResultList.get(termineMitRaumUndBesitzer.indexOf(item)).isEmpty()}">Keine Gegenstände reserviert</td></tr>
+                                    <tr>
+                                        <td th:if="${ausstattungsgegenstandResultList.get(termineMitRaumUndBesitzer.indexOf(item)).isEmpty()}">
+                                            Keine Gegenstände reserviert
+                                        </td>
+                                    </tr>
                                     <th:block
                                             th:each="gegenstand : ${ausstattungsgegenstandResultList.get(termineMitRaumUndBesitzer.indexOf(item))}">
                                         <tr>
@@ -125,6 +131,18 @@
                     </table>
                 </details>
             </td>
+            <div th:if="${item.get('BesitzerPId')} == ${item.get('PersonId')}">
+                <td>
+                    <form action="#" th:action="'/user/editBesprechung/' + ${item.get('BesprechungId')}" th:method="get">
+                        <button th:type="submit" th:text="Edit"></button>
+                    </form>
+                </td>
+                <td>
+                    <form action="#" th:action="'/user/deleteBesprechung/' + ${item.get('BesprechungId')}" th:method="delete">
+                        <button th:type="submit" th:text="Delete"></button>
+                    </form>
+                </td>
+            </div>
         </tr>
     </th:block>
     </tbody>

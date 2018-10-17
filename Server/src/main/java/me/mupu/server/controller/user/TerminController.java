@@ -37,8 +37,9 @@ public class TerminController {
         // get current user
         BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        Result<Record15<UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String>> termineMitRaumUndBesitzer =
+        Result<Record16<UInteger, UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String>> termineMitRaumUndBesitzer =
                 dslContext.select(
+                        TEILNAHME.PERSONID,
                         BESPRECHUNG.BESPRECHUNGID,
                         BESPRECHUNG.THEMA,
                         BESPRECHUNG.ZEITRAUMSTART,
@@ -65,7 +66,7 @@ public class TerminController {
                 .fetch();
 
         List<Result<Record2<String, String>>> teilnehmerList = new ArrayList<>();
-        for (Record15<UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
+        for (Record16<UInteger, UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
              termineMitRaumUndBesitzer) {
             Result<Record2<String, String>> teilnehmer =
                     dslContext.select(
@@ -81,7 +82,7 @@ public class TerminController {
         }
 
         List<Result<Record2<String, UInteger>>> ausstattungsgegenstand = new ArrayList<>();
-        for (Record15<UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
+        for (Record16<UInteger, UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
                 termineMitRaumUndBesitzer) {
             Result<Record2<String, UInteger>> gegenstand =
                     dslContext.select(

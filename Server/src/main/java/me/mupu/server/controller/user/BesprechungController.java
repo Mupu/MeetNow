@@ -257,6 +257,8 @@ public class BesprechungController {
                     .where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
                     .execute();
 
+            besprechung.setRaumid(UInteger.valueOf(besprechungForm.getRaumId()));
+
             // this is all previously invited users but will be filtered to removedUsers
             Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
 
@@ -312,9 +314,6 @@ public class BesprechungController {
             );
 
 
-            System.out.println(Arrays.toString(besprechungForm.getChosenItemsCount()));
-
-
             // used to check later if the item needs to be updated or inserted
             Result<AusleiheRecord> previousItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
 
@@ -354,14 +353,6 @@ public class BesprechungController {
                     removedItems.stream().noneMatch(nai -> nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue())
                             || besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
             );
-
-            System.out.println("new");
-            System.out.println(newlyAddedItems);
-
-            System.out.println("removed");
-            System.out.println(removedItems);
-
-            System.out.println("previous2\n" + previousItems);
 
             removedItems.forEach(ri -> {
                 // delete user

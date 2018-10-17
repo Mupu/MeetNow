@@ -163,8 +163,9 @@ public class BesprechungController {
 
         // check if user owns that meeting
         BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId)))
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))    // owner ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
                 .fetchSingle();
 
         // fill in values
@@ -232,11 +233,11 @@ public class BesprechungController {
         // get current logged in user
         BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-
         // check if user owns that meeting
         BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
                 where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))                 // ist besitzer ?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
                 .fetchSingle();
 
         if (besprechungForm.getZeitraumStart() == null || besprechungForm.getZeitraumEnde() == null
@@ -245,8 +246,8 @@ public class BesprechungController {
 
 
         if (!bindingResult.hasErrors()) {
+            // datetime pattern
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
             dslContext.update(BESPRECHUNG)
                     .set(BESPRECHUNG.THEMA, besprechungForm.getThema())
                     .set(BESPRECHUNG.ZEITRAUMSTART, Timestamp.valueOf(sdf.format(besprechungForm.getZeitraumStart())))
@@ -258,11 +259,22 @@ public class BesprechungController {
             // this is all previously invited users but will be filtered to removedUsers
             Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
 
-            Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () -> removedUsers.stream().filter(us ->
-                    Arrays.stream(besprechungForm.getInvitedUsers()).anyMatch(b ->
-                            us.getPersonid().intValue() == Integer.valueOf(b)
+            Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () ->
+                    removedUsers.stream().filter(us ->
+                            Arrays.stream(besprechungForm.getInvitedUsers()).anyMatch(b ->
+                                    us.getPersonid().intValue() == Integer.valueOf(b)
+                            )
+                    );
+
+            // newly added users
+            ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
+            // remove users from list that are were invited before
+            newlyAddedUsers.removeIf(nau ->
+                    stillInvitedUsers.get().anyMatch(siu ->
+                            siu.getPersonid().intValue() == Integer.valueOf(nau)
                     )
             );
+
             // remove yourself from list
             removedUsers.removeIf(u -> u.getPersonid().intValue() == user.getPersonid().intValue());
             // remove users that are on both lists ( they stay invited and are not interesting to us )
@@ -272,25 +284,35 @@ public class BesprechungController {
                     )
             );
 
-            ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
 
-            newlyAddedUsers.removeIf(u ->
-                    stillInvitedUsers.get().anyMatch(x ->
-                            x.getPersonid().intValue() == Integer.valueOf(u)
-                    )
+
+
+            removedUsers.forEach(ru -> {
+                // replace a removed users id with an added one
+                if (newlyAddedUsers.size() > 0) {
+                    UInteger newPid = UInteger.valueOf(newlyAddedUsers.get(0));
+                    newlyAddedUsers.remove(0);
+                    dslContext.update(TEILNAHME)
+                            .set(TEILNAHME.PERSONID, newPid)
+                            .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
+                            .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
+                            .execute();
+                } else // delete user
+                    dslContext.deleteFrom(TEILNAHME)
+                            .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
+                            .and(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                            .execute();
+            });
+
+            // add remaining newly added users
+            newlyAddedUsers.forEach(nau ->
+                        dslContext.insertInto(TEILNAHME)
+                                .values(UInteger.valueOf(nau),
+                                        besprechung.getBesprechungid())
+                                .execute()
             );
 
-
-
-            System.out.println("jetzt angehakt");
-            System.out.println(Arrays.toString(besprechungForm.getInvitedUsers()));
-
-            System.out.println("removed:");
-            System.out.println(removedUsers);
-
-            System.out.println("added:");
-            System.out.println(Arrays.toString(newlyAddedUsers.toArray()));
-            System.out.println("\n");
+            System.out.println(Arrays.toString(besprechungForm.getChosenItemsCount()));
         }
 
         Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());

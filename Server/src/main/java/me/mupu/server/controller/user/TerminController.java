@@ -58,14 +58,13 @@ public class TerminController {
                 .from(TEILNAHME)
                 .leftJoin(BESPRECHUNG).using(BESPRECHUNG.BESPRECHUNGID)
                 .leftJoin(RAUM).using(BESPRECHUNG.RAUMID)
-                .leftJoin(PERSON).using(TEILNAHME.PERSONID)
+                .leftJoin(PERSON).on(BESPRECHUNG.BESITZERPID.eq(PERSON.PERSONID))
                 .where(TEILNAHME.PERSONID.eq(user.getPersonid()))
                 .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.currentTimestamp()))
                 .orderBy(BESPRECHUNG.ZEITRAUMSTART.asc(), BESPRECHUNG.ZEITRAUMENDE.asc())
                 .fetch();
 
         List<Result<Record2<String, String>>> teilnehmerList = new ArrayList<>();
-
         for (Record15<UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
              termineMitRaumUndBesitzer) {
             Result<Record2<String, String>> teilnehmer =
@@ -82,7 +81,6 @@ public class TerminController {
         }
 
         List<Result<Record2<String, UInteger>>> ausstattungsgegenstand = new ArrayList<>();
-
         for (Record15<UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String> r:
                 termineMitRaumUndBesitzer) {
             Result<Record2<String, UInteger>> gegenstand =

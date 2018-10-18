@@ -9,12 +9,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-public class CustomUserDetails implements UserDetails {
+public class CustomUser implements UserDetails {
 
     @Getter
     private final BenutzerRecord userdata;
     private final Collection<GrantedAuthority> collection;
-    public CustomUserDetails(BenutzerRecord userdata, Collection<GrantedAuthority> collection) {
+    public CustomUser(BenutzerRecord userdata, Collection<GrantedAuthority> collection) {
         this.userdata = userdata;
         this.collection = collection;
     }

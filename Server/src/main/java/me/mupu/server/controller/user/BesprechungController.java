@@ -1,14 +1,14 @@
 package me.mupu.server.controller.user;
 
 import me.mupu.server.form.BesprechungForm;
-import me.mupu.server.model.CustomUserDetails;
+import me.mupu.server.form.RegistrationForm;
+import me.mupu.server.model.CustomUser;
+import me.mupu.server.service.RegistrationService;
 import org.jooq.*;
 import org.jooq.generated.tables.records.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -16,12 +16,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
 
-import java.io.FileNotFoundException;
 import java.math.BigDecimal;
-import java.nio.file.NoSuchFileException;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -40,6 +38,9 @@ public class BesprechungController {
     @Autowired
     private DSLContext dslContext;
 
+    @Autowired
+    private RegistrationService registrationService;
+
     /**
      * ###################################
      * #        neue Besprechung
@@ -53,7 +54,7 @@ public class BesprechungController {
 
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // default start end date
         Calendar c = Calendar.getInstance();
@@ -82,7 +83,7 @@ public class BesprechungController {
 
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         RaumRecord raum = dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(UInteger.valueOf(besprechungForm.getRaumId()))).fetchAny();
         if (raum == null)
@@ -155,12 +156,15 @@ public class BesprechungController {
      */
 
     @GetMapping("editBesprechung/{besprechungId}")
-    public ModelAndView getEditBesprechung(@PathVariable int besprechungId, BesprechungForm besprechungForm) {
+    public ModelAndView getEditBesprechung(@PathVariable int besprechungId,
+                                           BesprechungForm besprechungForm,
+                                           RegistrationForm registrationForm) {
+        System.out.println("EDIT GET");
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/editBesprechung");
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
         BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
@@ -218,6 +222,7 @@ public class BesprechungController {
         // add preselected items
         besprechungForm.setChosenItemsCount(ris.toArray(String[]::new));
 
+        mv.addObject("registrationForm", registrationForm);
         mv.addObject("besprechungForm", besprechungForm);
         mv.addObject("rooms", rooms);
         mv.addObject("gegenstandList", availableItems);
@@ -227,12 +232,17 @@ public class BesprechungController {
     }
 
     @PutMapping("editBesprechung/{besprechungId}")
-    public ModelAndView editBesprechung(@PathVariable int besprechungId, @Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
+    public ModelAndView editBesprechung(@PathVariable int besprechungId,
+                                        @Valid BesprechungForm besprechungForm,
+                                        BindingResult bindingResult,
+                                        RegistrationForm registrationForm,
+                                        BindingResult bindingResulttest) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/editBesprechung");
+        System.out.println("EDIT PUT");
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
         BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
@@ -400,6 +410,70 @@ public class BesprechungController {
                 })
         );
 
+        mv.addObject("registrationForm", registrationForm);
+        mv.addObject("besprechungForm", besprechungForm);
+        mv.addObject("rooms", rooms);
+        mv.addObject("gegenstandList", availableItems);
+        mv.addObject("userList", userList);
+        mv.addObject("bId", besprechung.getBesprechungid());
+        return mv;
+    }
+
+    @PostMapping("registration/{besprechungId}")
+    public ModelAndView registerForm(@PathVariable int besprechungId,
+                                     @Valid RegistrationForm registrationForm,
+                                     BindingResult bindingResult,
+                                     BesprechungForm besprechungForm,
+                                     HttpServletRequest request) {
+
+        System.out.println("registration POST");
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("user/editBesprechung");
+
+        // get current logged in user
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+
+        // check if user owns that meeting
+        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                .fetchSingle();
+
+
+        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
+        // add current room to the list as current room
+        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
+
+        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // remove yourself from list
+        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
+
+        //             id        name    anzahl
+        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
+
+        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        // add currentlyReservedItems to available to get complete selection for this meeting
+        currentlyReservedItems.forEach(ri ->
+                availableItems.forEach(ai -> {
+                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
+                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
+                    }
+                })
+        );
+
+        if (!bindingResult.hasErrors()) {
+            PersonRecord addedUser;
+            if ((addedUser = registrationService.registerUser(registrationForm, request)) != null) {
+                mv.addObject("success", "Registered: " + addedUser.getVorname() + " " + addedUser.getNachname());
+                // add newly added user to list
+                userList.add(addedUser);
+            } else
+                mv.addObject("error", "Couldnt add user");
+        }
+
+        mv.addObject("registrationForm", registrationForm);
         mv.addObject("besprechungForm", besprechungForm);
         mv.addObject("rooms", rooms);
         mv.addObject("gegenstandList", availableItems);
@@ -412,7 +486,7 @@ public class BesprechungController {
     public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
         BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
@@ -425,6 +499,7 @@ public class BesprechungController {
         System.out.println("DELETE BESPRECHUNG" + besprechung.getBesprechungid());
         return new ModelAndView("redirect:/user/termine");
     }
+
 
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
 

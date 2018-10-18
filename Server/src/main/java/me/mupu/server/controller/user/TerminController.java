@@ -1,16 +1,13 @@
 package me.mupu.server.controller.user;
 
-import me.mupu.server.model.CustomUserDetails;
-import me.mupu.server.service.CustomUserDetailsService;
+import me.mupu.server.model.CustomUser;
 import org.jooq.*;
 import org.jooq.generated.tables.records.BenutzerRecord;
-import org.jooq.generated.tables.records.PersonRecord;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
@@ -35,7 +32,7 @@ public class TerminController {
         mv.setViewName("user/termine");
 
         // get current user
-        BenutzerRecord user = ((CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         Result<Record16<UInteger, UInteger, String, Timestamp, Timestamp, String, UInteger, UInteger, UInteger, Byte, Byte, Byte, UInteger, String, String, String>> termineMitRaumUndBesitzer =
                 dslContext.select(

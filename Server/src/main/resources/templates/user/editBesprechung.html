@@ -8,13 +8,13 @@
 <h1>EDIT BESPRECHUNG</h1>
 <p><a href="/user">User Home here</a></p>
 
+<tbody>
 <table>
-    <tbody>
     <form action="#" th:object="${besprechungForm}" th:action="'/user/editBesprechung/' + ${bId}" th:method="put">
 
         <tr>
             <td th:text="Thema"></td>
-            <td><input type="text" th:field="*{thema}" /></td>
+            <td><input type="text" th:field="*{thema}"/></td>
             <td th:if="${#fields.hasErrors('thema')}" th:errors="*{thema}"></td>
         </tr>
 
@@ -26,7 +26,7 @@
 
         <tr>
             <td><label>Ende:</label></td>
-            <td><input th:field="*{zeitraumEnde}" type="datetime-local" /></td>
+            <td><input th:field="*{zeitraumEnde}" type="datetime-local"/></td>
             <td th:if="${#fields.hasErrors('zeitraumEnde')}" th:errors="*{zeitraumEnde}"></td>
         </tr>
         <tr>
@@ -112,7 +112,40 @@
             </td>
         </tr>
     </form>
-    </tbody>
 </table>
+<table>
+    <tr>
+        <td><label>Add new User</label></td>
+    </tr>
+    <form th:object="${registrationForm}" th:action="'/user/registration/' + ${bId}"  th:method="post">
+        <tr>
+            <td>Vorname:</td>
+            <td><input type="text" th:field="*{vorname}"/></td>
+            <td th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}"></td>
+        </tr>
+        <tr>
+            <td>Nachname:</td>
+            <td><input type="text" th:field="*{nachname}"/></td>
+            <td th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}"></td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td><input type="text" th:field="*{email}"/></td>
+            <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></td>
+        </tr>
+        <tr>
+            <td>
+                <button type="submit" th:text="'Submit'"></button>
+            </td>
+        </tr>
+    </form>
+    <tr th:if="${success}">
+        <p th:text="${success}"></p>
+    </tr>
+    <tr th:if="${error}">
+        <p th:text="${error}"></p>
+    </tr>
+</table>
+</tbody>
 </body>
 </html>

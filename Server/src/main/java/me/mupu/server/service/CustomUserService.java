@@ -1,6 +1,6 @@
 package me.mupu.server.service;
 
-import me.mupu.server.model.CustomUserDetails;
+import me.mupu.server.model.CustomUser;
 import org.jooq.DSLContext;
 import org.jooq.generated.tables.records.BenutzerRecord;
 import org.jooq.generated.tables.records.PersonRecord;
@@ -19,7 +19,7 @@ import java.util.List;
 import static org.jooq.generated.Tables.*;
 
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserService implements UserDetailsService {
 
     @Autowired
     private DSLContext dslContext;
@@ -43,7 +43,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 .where(USER_ROLE.BENUTZERID.eq(userdata.getBenutzerid()))
                 .fetch(ROLE.NAME);
         roles.forEach(r -> collection.add(new SimpleGrantedAuthority("ROLE_" + r)));
-        return new CustomUserDetails(userdata, collection);
+        return new CustomUser(userdata, collection);
     }
 
     public PersonRecord findUserByConfimationToken(String confirmationToken) {

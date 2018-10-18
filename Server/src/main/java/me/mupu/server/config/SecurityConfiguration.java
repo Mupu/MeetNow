@@ -1,8 +1,7 @@
 package me.mupu.server.config;
 
 import me.mupu.server.HashPasswordEncoder;
-import me.mupu.server.service.CustomUserDetailsService;
-import org.jooq.DSLContext;
+import me.mupu.server.service.CustomUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -22,7 +21,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private CustomUserDetailsService customUserDetailsService;
+    private CustomUserService customUserService;
 
     @Autowired
     HashPasswordEncoder hashPasswordEncoder;
@@ -31,7 +30,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth)
             throws Exception {
         auth
-                .userDetailsService(customUserDetailsService)
+                .userDetailsService(customUserService)
                 .passwordEncoder(hashPasswordEncoder);
     }
 

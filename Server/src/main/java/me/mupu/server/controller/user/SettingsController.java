@@ -1,14 +1,11 @@
 package me.mupu.server.controller.user;
 
 import me.mupu.server.HashPasswordEncoder;
-import me.mupu.server.model.CustomUserDetails;
+import me.mupu.server.model.CustomUser;
 import org.jooq.DSLContext;
 import org.jooq.Record;
-import org.jooq.generated.tables.records.PersonRecord;
-import org.jooq.types.UInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +29,7 @@ public class SettingsController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/settings");
 
-        CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Record r = dslContext.select().from(PERSON).leftJoin(BENUTZER).using(PERSON.PERSONID)
                 .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
                 .fetchOne();
@@ -51,7 +48,7 @@ public class SettingsController {
         mv.setViewName("redirect:/user/settings");
 
         // get current logged in user
-        CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         try {
             if (!vorname.equals(""))
@@ -87,7 +84,7 @@ public class SettingsController {
 
     @DeleteMapping()
     public ModelAndView deleteAccount() {
-        CustomUserDetails user = (CustomUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         dslContext.deleteFrom(BENUTZER)
                 .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))

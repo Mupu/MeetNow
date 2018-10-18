@@ -160,75 +160,20 @@ public class BesprechungController {
                                            BesprechungForm besprechungForm,
                                            RegistrationForm registrationForm) {
         System.out.println("EDIT GET");
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/editBesprechung");
 
         // get current logged in user
-        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
-        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))    // owner ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
+        BesprechungRecord besprechung = isOwnerOfRoom(owner.getPersonid(), besprechungId);
 
-        // fill in values
-        besprechungForm.setThema(besprechung.getThema());
-        besprechungForm.setZeitraumStart(besprechung.getZeitraumstart());
-        besprechungForm.setZeitraumEnde(besprechung.getZeitraumende());
-        // preselect current room as default
-        besprechungForm.setRaumId(besprechung.getRaumid().intValue());
-
-        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
-        // add current room to the list as current room
-        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
-
-        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
-        // remove yourself from list
-        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
-
-        // get invited users
-        Result<Record1<UInteger>> invitedUsers = dslContext
-                .select(TEILNAHME.PERSONID)
-                .from(TEILNAHME)
-                .where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
-                .and(TEILNAHME.PERSONID.ne(user.getPersonid())) // remove the owner from the list
-                .fetch();
-        // converts UIntegers to String stream
-        Stream<String> stream = invitedUsers.stream().map(s -> String.valueOf(((UInteger) s.get(0)).intValue()));
-        // converts stream to array and add it as default to besprechungForm
-        besprechungForm.setInvitedUsers(stream.toArray(String[]::new));
-
-        //             id        name    anzahl
-        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
-
-        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-        // add currentlyReservedItems to available to get complete selection for this meeting
-        currentlyReservedItems.forEach(ri ->
-                availableItems.forEach(ai -> {
-                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
-                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
-                    }
-                })
+        return setupDefaultPage(
+                "user/editBesprechung",
+                owner.getPersonid(),
+                besprechungForm,
+                registrationForm,
+                besprechung
         );
-
-        // convert stream to string stream
-        Stream<String> ris = currentlyReservedItems.stream().map(ri ->
-                String.valueOf(ri.getAusstattungsgegenstandid()) + ":" + String.valueOf(ri.getAnzahl())
-        );
-
-        // add preselected items
-        besprechungForm.setChosenItemsCount(ris.toArray(String[]::new));
-
-        mv.addObject("registrationForm", registrationForm);
-        mv.addObject("besprechungForm", besprechungForm);
-        mv.addObject("rooms", rooms);
-        mv.addObject("gegenstandList", availableItems);
-        mv.addObject("userList", userList);
-        mv.addObject("bId", besprechung.getBesprechungid());
-        return mv;
     }
 
     @PutMapping("editBesprechung/{besprechungId}")
@@ -237,26 +182,23 @@ public class BesprechungController {
                                         BindingResult bindingResult,
                                         RegistrationForm registrationForm,
                                         BindingResult bindingResulttest) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/editBesprechung");
         System.out.println("EDIT PUT");
 
+
         // get current logged in user
-        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+        BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
-        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
+        BesprechungRecord besprechung = isOwnerOfRoom(owner.getPersonid(), besprechungId);
 
+        // check if times are correct
         if (besprechungForm.getZeitraumStart() == null || besprechungForm.getZeitraumEnde() == null
                 || besprechungForm.getZeitraumStart().compareTo(besprechungForm.getZeitraumEnde()) >= 0)
             bindingResult.rejectValue("zeitraumEnde", "zeitraumEnde", "Endzeitpunkt muss nach Startzeitpunkt liegen");
 
 
         if (!bindingResult.hasErrors()) {
+            // todo make this into own method called change date
             // datetime pattern
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             dslContext.update(BESPRECHUNG)
@@ -267,156 +209,20 @@ public class BesprechungController {
                     .where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
                     .execute();
 
-            besprechung.setRaumid(UInteger.valueOf(besprechungForm.getRaumId()));
+            // users
+            updateTeilnahmeDatabase(owner, besprechung, besprechungForm);
 
-            // this is all previously invited users but will be filtered to removedUsers
-            Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-            Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () ->
-                    removedUsers.stream().filter(us ->
-                            Arrays.stream(besprechungForm.getInvitedUsers()).anyMatch(b ->
-                                    us.getPersonid().intValue() == Integer.valueOf(b)
-                            )
-                    );
-
-            // newly added users
-            ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
-            // remove users that are were invited before from list
-            newlyAddedUsers.removeIf(nau ->
-                    stillInvitedUsers.get().anyMatch(siu ->
-                            siu.getPersonid().intValue() == Integer.valueOf(nau)
-                    )
-            );
-
-            // remove yourself from list
-            removedUsers.removeIf(u -> u.getPersonid().intValue() == user.getPersonid().intValue());
-            // remove users that are on both lists ( they stay invited and are not interesting to us )
-            removedUsers.removeIf(u ->
-                    stillInvitedUsers.get().anyMatch(x ->
-                            x.getPersonid().intValue() == u.getPersonid().intValue()
-                    )
-            );
-
-
-            removedUsers.forEach(ru -> {
-                // replace a removed users id with an added one
-                if (newlyAddedUsers.size() > 0) {
-                    UInteger newPid = UInteger.valueOf(newlyAddedUsers.get(0));
-                    newlyAddedUsers.remove(0);
-                    dslContext.update(TEILNAHME)
-                            .set(TEILNAHME.PERSONID, newPid)
-                            .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
-                            .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
-                            .execute();
-                } else // delete user
-                    dslContext.deleteFrom(TEILNAHME)
-                            .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
-                            .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
-                            .execute();
-            });
-
-            // add remaining newly added users
-            newlyAddedUsers.forEach(nau ->
-                    dslContext.insertInto(TEILNAHME)
-                            .values(UInteger.valueOf(nau),
-                                    besprechung.getBesprechungid())
-                            .execute()
-            );
-
-
-            // used to check later if the item needs to be updated or inserted
-            Result<AusleiheRecord> previousItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-
-            // better useble list then the string arrays
-            Map<Integer, Integer> besprechungChosenItemsMap = new HashMap<>();
-            for (String s : besprechungForm.getChosenItemsCount()) {
-                String[] parts = s.split(":");
-//                if (removedItems.stream().anyMatch(agId -> agId.getAusstattungsgegenstandid().intValue() == Integer.valueOf(parts[0])))
-                besprechungChosenItemsMap.put(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
-            }
-
-            // is previously selected items but will be filtered to removedItems
-            Result<AusleiheRecord> removedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-            Supplier<Stream<AusleiheRecord>> stillSelectedItems = () ->
-                    // still all previously selected items with count
-                    removedItems.stream().filter(ri ->
-                            besprechungChosenItemsMap.keySet().stream().anyMatch(psiks ->
-                                    ri.getAusstattungsgegenstandid().intValue() == psiks
-                            )
-                    );
-
-            // newly added items
-            ArrayList<Integer> newlyAddedItems = new ArrayList<>(besprechungChosenItemsMap.keySet());
-            // remove items that are were selected before from list
-            newlyAddedItems.removeIf(nai ->
-                    stillSelectedItems.get().anyMatch(ssi ->
-                            ssi.getAusstattungsgegenstandid().intValue() == nai
-                                    && (ssi.getAnzahl().intValue() == besprechungChosenItemsMap.get(nai))
-                                    || besprechungChosenItemsMap.get(nai) == 0
-                    )
-            );
-
-            // remove items that are on both lists ( they stay selected and are not interesting to us )
-            removedItems.removeIf(ri ->
-                    removedItems.stream().noneMatch(nai -> nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue())
-                            || besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
-            );
-
-            removedItems.forEach(ri -> {
-                // delete user
-                dslContext.deleteFrom(AUSLEIHE)
-                        .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(ri.getAusstattungsgegenstandid()))
-                        .and(AUSLEIHE.BESPRECHUNGID.eq(ri.getBesprechungid()))
-                        .execute();
-            });
-
-            // add remaining newly added users
-            newlyAddedItems.forEach(nai -> {
-                if (previousItems.stream().anyMatch(pi -> pi.getAusstattungsgegenstandid().intValue() == nai))
-                    dslContext.update(AUSLEIHE)
-                            .set(AUSLEIHE.ANZAHL, UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
-                            .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(nai)))
-                            .execute();
-                else
-                    dslContext.insertInto(AUSLEIHE)
-                            .values(besprechung.getBesprechungid(),
-                                    UInteger.valueOf(nai),
-                                    UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
-                            .execute();
-            });
+            // items
+            updateAusleiheDatabase(besprechung, besprechungForm);
         }
 
-        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
-        // add current room to the list as current room
-        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
 
-        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
-        // remove yourself from list
-        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
-
-        //             id        name    anzahl
-        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
-
-        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-        // add currentlyReservedItems to available to get complete selection for this meeting
-        currentlyReservedItems.forEach(ri ->
-                availableItems.forEach(ai -> {
-                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
-                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
-                    }
-                })
-        );
-
-        mv.addObject("registrationForm", registrationForm);
-        mv.addObject("besprechungForm", besprechungForm);
-        mv.addObject("rooms", rooms);
-        mv.addObject("gegenstandList", availableItems);
-        mv.addObject("userList", userList);
-        mv.addObject("bId", besprechung.getBesprechungid());
-        return mv;
+        return setupDefaultPage(
+                "user/editBesprechung",
+                owner.getPersonid(),
+                besprechungForm,
+                registrationForm,
+                besprechung);
     }
 
     @PostMapping("registration/{besprechungId}")
@@ -433,13 +239,7 @@ public class BesprechungController {
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        // check if user owns that meeting
-        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
-
+        BesprechungRecord besprechung = isOwnerOfRoom(user.getPersonid(), besprechungId);
 
         Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
         // add current room to the list as current room
@@ -500,8 +300,224 @@ public class BesprechungController {
         return new ModelAndView("redirect:/user/termine");
     }
 
+    /**
+     * Adds/removes the users to/from the database based on the selection in besprechungForm
+     */
+    private void updateTeilnahmeDatabase(BenutzerRecord owner, BesprechungRecord besprechung, BesprechungForm besprechungForm) {
+        // this is all previously invited users but will be filtered to removedUsers
+        Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () ->
+                removedUsers.stream().filter(us ->
+                        Arrays.stream(besprechungForm.getInvitedUsers()).anyMatch(b ->
+                                us.getPersonid().intValue() == Integer.valueOf(b)
+                        )
+                );
+
+        ArrayList<String> newlyAddedUsers = new ArrayList<>(Arrays.asList(besprechungForm.getInvitedUsers()));
+        // remove users that are were invited before
+        newlyAddedUsers.removeIf(nau ->
+                stillInvitedUsers.get().anyMatch(siu ->
+                        siu.getPersonid().intValue() == Integer.valueOf(nau)
+                )
+        );
+
+        // remove owner from list
+        removedUsers.removeIf(u -> u.getPersonid().intValue() == owner.getPersonid().intValue());
+        // remove users that are still invited
+        removedUsers.removeIf(u ->
+                stillInvitedUsers.get().anyMatch(x ->
+                        x.getPersonid().intValue() == u.getPersonid().intValue()
+                )
+        );
+
+        // remove removedUsers
+        removedUsers.forEach(ru -> {
+            // replace a removed users id with an added one
+            if (newlyAddedUsers.size() > 0) {
+                UInteger newPid = UInteger.valueOf(newlyAddedUsers.get(0));
+                newlyAddedUsers.remove(0);
+                dslContext.update(TEILNAHME)
+                        .set(TEILNAHME.PERSONID, newPid)
+                        .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
+                        .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
+                        .execute();
+            } else // delete user
+                dslContext.deleteFrom(TEILNAHME)
+                        .where(TEILNAHME.PERSONID.eq(ru.getPersonid()))
+                        .and(TEILNAHME.BESPRECHUNGID.eq(ru.getBesprechungid()))
+                        .execute();
+        });
+
+        // add remaining newly added users
+        newlyAddedUsers.forEach(nau ->
+                dslContext.insertInto(TEILNAHME)
+                        .values(UInteger.valueOf(nau),
+                                besprechung.getBesprechungid())
+                        .execute()
+        );
+    }
+
+    /**
+     * Adds/removes the items to/from the database based on the selection in besprechungForm
+     */
+    // todo check for changed inputs ( [id : count] <---- )
+    private void updateAusleiheDatabase(BesprechungRecord besprechung, BesprechungForm besprechungForm) {
+
+        Result<AusleiheRecord> previousItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        // split string and convert to map
+        Map<Integer, Integer> besprechungChosenItemsMap = new HashMap<>();
+        for (String s : besprechungForm.getChosenItemsCount()) {
+            String[] parts = s.split(":");
+            besprechungChosenItemsMap.put(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+        }
+
+        // is previously selected items but will be filtered to removedItems
+        Result<AusleiheRecord> removedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        Supplier<Stream<AusleiheRecord>> stillSelectedItems = () ->
+                removedItems.stream().filter(ri ->
+                        besprechungChosenItemsMap.keySet().stream().anyMatch(psiks ->
+                                ri.getAusstattungsgegenstandid().intValue() == psiks
+                        )
+                );
+
+
+        ArrayList<Integer> newlyAddedItems = new ArrayList<>(besprechungChosenItemsMap.keySet());
+        // remove still selected and unimportant items
+        newlyAddedItems.removeIf(nai ->
+                stillSelectedItems.get().anyMatch(ssi ->
+                        ssi.getAusstattungsgegenstandid().intValue() == nai
+                                && (ssi.getAnzahl().intValue() == besprechungChosenItemsMap.get(nai))
+                )
+                        || besprechungChosenItemsMap.get(nai) == 0
+        );
+
+        // remove items that are on both lists
+        removedItems.removeIf(ri ->                     // ?????????????????????
+                removedItems.stream().noneMatch(nai ->  // ?????????????????????
+                        nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue())
+                        || besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
+        );
+
+
+        // delete all removed items
+        removedItems.forEach(ri ->
+                dslContext.deleteFrom(AUSLEIHE)
+                        .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(ri.getAusstattungsgegenstandid()))
+                        .and(AUSLEIHE.BESPRECHUNGID.eq(ri.getBesprechungid()))
+                        .execute()
+        );
+
+        // add/update newly added/updateted items/itemcounts
+        newlyAddedItems.forEach(nai -> {
+            if (previousItems.stream().anyMatch(pi -> pi.getAusstattungsgegenstandid().intValue() == nai)) // has the item been in the database ?
+                dslContext.update(AUSLEIHE)
+                        .set(AUSLEIHE.ANZAHL, UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
+                        .where(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(nai)))
+                        .execute();
+            else
+                dslContext.insertInto(AUSLEIHE)
+                        .values(besprechung.getBesprechungid(),
+                                UInteger.valueOf(nai),
+                                UInteger.valueOf(besprechungChosenItemsMap.get(nai)))
+                        .execute();
+        });
+    }
+
+    private ModelAndView setupDefaultPage(String viewName,
+                                          UInteger ownerPId,
+                                          BesprechungForm besprechungForm,
+                                          RegistrationForm registrationForm,
+                                          BesprechungRecord besprechung
+
+    ) {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName(viewName);
+
+
+        // set default values
+        // only set these default values of they havent been set yet (on get request)
+        if (besprechungForm.getRaumId() == -1) {
+            besprechungForm.setThema(besprechung.getThema());
+            besprechungForm.setZeitraumStart(besprechung.getZeitraumstart());
+            besprechungForm.setZeitraumEnde(besprechung.getZeitraumende());
+            besprechungForm.setRaumId(besprechung.getRaumid().intValue());
+        }
+
+        Result<PersonRecord> allExistingUsers = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // check invited users
+        besprechungForm.setInvitedUsers(getInvitedUsersForThymeleaf(ownerPId, besprechung, allExistingUsers));
+
+
+        //             id        name    anzahl
+        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(
+                besprechung.getBesprechungid(),
+                besprechungForm.getZeitraumStart(),
+                besprechungForm.getZeitraumEnde()
+        );
+        // select items
+        besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung, availableItems));
+
+
+        Result<RaumRecord> availableRooms = getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
+        // add currently selected room to the list as current room
+        availableRooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(UInteger.valueOf(besprechungForm.getRaumId()))).fetchSingle());
+
+
+        // pass information to mv
+        mv.addObject("registrationForm", registrationForm);
+        mv.addObject("besprechungForm", besprechungForm);
+        mv.addObject("rooms", availableRooms);
+        mv.addObject("gegenstandList", availableItems);
+        mv.addObject("userList", allExistingUsers);
+        mv.addObject("bId", besprechung.getBesprechungid());
+        return mv;
+    }
+
+    private String[] getSelectedItemsForThymeleaf(BesprechungRecord besprechung, Result<Record3<UInteger, String, Integer>> availableItems) {
+        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
+
+        System.out.println(availableItems);
+        System.out.println(currentlyReservedItems);
+        // convert stream to string stream
+        Stream<String> ris = currentlyReservedItems.stream().map(ri ->
+                String.valueOf(ri.getAusstattungsgegenstandid()) + ":" + String.valueOf(ri.getAnzahl())
+        );
+
+        return ris.toArray(String[]::new);
+    }
+
+    private String[] getInvitedUsersForThymeleaf(UInteger ownerPId, BesprechungRecord besprechung, Result<PersonRecord> allExistingUsers) {
+        // remove owner from list
+        allExistingUsers.removeIf(personRecord -> ownerPId.intValue() == personRecord.getPersonid().intValue());
+
+        Result<Record1<UInteger>> invitedUsers = dslContext
+                .select(TEILNAHME.PERSONID)
+                .from(TEILNAHME)
+                .where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid()))
+                .and(TEILNAHME.PERSONID.ne(ownerPId)) // remove the owner from the list
+                .fetch();
+
+        Stream<String> invitedUsersStream = invitedUsers.stream().map(s -> String.valueOf(((UInteger) s.get(0)).intValue()));
+
+        return invitedUsersStream.toArray(String[]::new);
+    }
+
+    private BesprechungRecord isOwnerOfRoom(UInteger ownerPId, int roomId) {
+        return dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(ownerPId))// ist besitzer ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                .fetchSingle();
+    }
 
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
+        return this.getAvailableItems(null, startDate, endDate);
+    }
+
+    private Result<Record3<UInteger, String, Integer>> getAvailableItems(UInteger besprechungId, Date startDate, Date endDate) {
 
         Table<BesprechungRecord> meetings = dslContext
                 .selectFrom(BESPRECHUNG)
@@ -509,14 +525,24 @@ public class BesprechungController {
                 .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
                 .asTable();
 
-
-        Table<Record2<UInteger, Integer>> reservedItems = dslContext
-                .select(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID, DSL.sum(AUSLEIHE.ANZAHL).mul(-1).cast(Integer.class).as("Anzahl"))
-                .from(AUSLEIHE)
-                .leftJoin(meetings).on(AUSLEIHE.BESPRECHUNGID.eq(meetings.field(BESPRECHUNG.BESPRECHUNGID)))
-                .where(meetings.field(BESPRECHUNG.BESPRECHUNGID).isNotNull())
-                .groupBy(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID)
-                .asTable();
+        Table<Record2<UInteger, Integer>> reservedItems;
+        if (besprechungId != null)
+            reservedItems = dslContext
+                    .select(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID, DSL.sum(AUSLEIHE.ANZAHL).mul(-1).cast(Integer.class).as("Anzahl"))
+                    .from(AUSLEIHE)
+                    .leftJoin(meetings).on(AUSLEIHE.BESPRECHUNGID.eq(meetings.field(BESPRECHUNG.BESPRECHUNGID)))
+                    .where(meetings.field(BESPRECHUNG.BESPRECHUNGID).isNotNull())
+                    .and(meetings.field(BESPRECHUNG.BESPRECHUNGID).ne(besprechungId))
+                    .groupBy(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID)
+                    .asTable();
+        else
+            reservedItems = dslContext
+                    .select(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID, DSL.sum(AUSLEIHE.ANZAHL).mul(-1).cast(Integer.class).as("Anzahl"))
+                    .from(AUSLEIHE)
+                    .leftJoin(meetings).on(AUSLEIHE.BESPRECHUNGID.eq(meetings.field(BESPRECHUNG.BESPRECHUNGID)))
+                    .where(meetings.field(BESPRECHUNG.BESPRECHUNGID).isNotNull())
+                    .groupBy(AUSLEIHE.AUSSTATTUNGSGEGENSTANDID)
+                    .asTable();
 
 
         SelectJoinStep<Record2<UInteger, UInteger>> allItemsWithMaxCount = dslContext

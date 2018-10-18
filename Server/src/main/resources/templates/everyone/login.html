@@ -10,9 +10,19 @@
 <div th:if="${param.logout}"> You have been logged out. </div>
 <div th:if="${param.accountDeleted}"> Your account has been deleted. </div>
 <form th:action="@{/login}" method="post">
-    <div><label> User Name: <input type="text" name="username" autofocus/> </label></div>
-    <div><label> Password: <input type="password" name="password"/> </label></div>
-    <div><input type="submit" value="Sign In"/></div>
+    <table>
+    <tr>
+        <td><label> User Name: </label></td>
+        <td><input type="text" name="username" autofocus/> </td>
+    </tr>
+    <tr>
+        <td><label> Password: </label>
+        <td><input type="password" name="password"/></td>
+    </tr>
+    <tr>
+        <td><input type="submit" value="Sign In"/></td>
+    </tr>
+    </table>
 </form>
 </body>
 </html>

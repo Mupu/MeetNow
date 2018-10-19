@@ -32,7 +32,7 @@ import static org.jooq.impl.DSL.inline;
 
 @Controller
 @Secured("ROLE_USER")
-@RequestMapping("user/")
+@RequestMapping("user")
 public class BesprechungController {
 
     @Autowired
@@ -47,11 +47,8 @@ public class BesprechungController {
      * *##################################
      */
 
-    @GetMapping("neueBesprechung")
+    @GetMapping("/neueBesprechung")
     public ModelAndView besprechungForm(BesprechungForm besprechungForm) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/neueBesprechung");
-
 
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
@@ -63,24 +60,11 @@ public class BesprechungController {
         c.add(Calendar.HOUR, 1);
         besprechungForm.setZeitraumEnde(c.getTime());
 
-        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
-        // remove yourself from list
-        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
-
-        mv.addObject("besprechungForm", besprechungForm);
-        mv.addObject("userList", userList);
-        mv.addObject("userId", user.getPersonid().intValue());
-        mv.addObject("rooms", getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
-        mv.addObject("gegenstandList", getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
-        return mv;
+        return createDefaultNeueBesprechungView(user, besprechungForm, null);
     }
 
-    @PostMapping("neueBesprechung")
+    @PostMapping("/neueBesprechung")
     public ModelAndView neueBesprechung(@Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
-
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/neueBesprechung");
-
 
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
@@ -135,7 +119,20 @@ public class BesprechungController {
                             .execute();
                 }
             }
+
+            return createDefaultNeueBesprechungView(user, besprechungForm, "redirect:/user/termine");
         }
+
+        return createDefaultNeueBesprechungView(user, besprechungForm, null);
+    }
+
+    private ModelAndView createDefaultNeueBesprechungView(BenutzerRecord user, BesprechungForm besprechungForm, String viewName) {
+        ModelAndView mv = new ModelAndView();
+        if (viewName == null)
+        mv.setViewName("user/neueBesprechung");
+        else
+        mv.setViewName(viewName);
+
 
         Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
         // remove yourself from list
@@ -148,14 +145,13 @@ public class BesprechungController {
         return mv;
     }
 
-
     /**
      * ###################################
      * #        edit Besprechung
      * *##################################
      */
 
-    @GetMapping("editBesprechung/{besprechungId}")
+    @GetMapping("/editBesprechung/{besprechungId}")
     public ModelAndView getEditBesprechung(@PathVariable int besprechungId,
                                            BesprechungForm besprechungForm,
                                            RegistrationForm registrationForm) {
@@ -167,8 +163,7 @@ public class BesprechungController {
         // check if user owns that meeting
         BesprechungRecord besprechung = isOwnerOfRoom(owner.getPersonid(), besprechungId);
 
-        return setupDefaultPage(
-                "user/editBesprechung",
+        return createDefaultEditBesprechungView(
                 owner.getPersonid(),
                 besprechungForm,
                 registrationForm,
@@ -176,7 +171,7 @@ public class BesprechungController {
         );
     }
 
-    @PutMapping("editBesprechung/{besprechungId}")
+    @PutMapping("/editBesprechung/{besprechungId}")
     public ModelAndView editBesprechung(@PathVariable int besprechungId,
                                         @Valid BesprechungForm besprechungForm,
                                         BindingResult bindingResult,
@@ -217,15 +212,14 @@ public class BesprechungController {
         }
 
 
-        return setupDefaultPage(
-                "user/editBesprechung",
+        return createDefaultEditBesprechungView(
                 owner.getPersonid(),
                 besprechungForm,
                 registrationForm,
                 besprechung);
     }
 
-    @PostMapping("registration/{besprechungId}")
+    @PostMapping("/registration/{besprechungId}")
     public ModelAndView registerForm(@PathVariable int besprechungId,
                                      @Valid RegistrationForm registrationForm,
                                      BindingResult bindingResult,
@@ -282,7 +276,7 @@ public class BesprechungController {
         return mv;
     }
 
-    @DeleteMapping("deleteBesprechung/{besprechungId}")
+    @DeleteMapping("/deleteBesprechung/{besprechungId}")
     public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
 
         // get current logged in user
@@ -426,15 +420,14 @@ public class BesprechungController {
         });
     }
 
-    private ModelAndView setupDefaultPage(String viewName,
-                                          UInteger ownerPId,
-                                          BesprechungForm besprechungForm,
-                                          RegistrationForm registrationForm,
-                                          BesprechungRecord besprechung
+    private ModelAndView createDefaultEditBesprechungView(UInteger ownerPId,
+                                                          BesprechungForm besprechungForm,
+                                                          RegistrationForm registrationForm,
+                                                          BesprechungRecord besprechung
 
     ) {
         ModelAndView mv = new ModelAndView();
-        mv.setViewName(viewName);
+        mv.setViewName("user/editBesprechung");
 
 
         // set default values

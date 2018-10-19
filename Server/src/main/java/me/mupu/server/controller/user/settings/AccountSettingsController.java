@@ -1,4 +1,4 @@
-package me.mupu.server.controller.user;
+package me.mupu.server.controller.user.settings;
 
 import me.mupu.server.HashPasswordEncoder;
 import me.mupu.server.model.CustomUser;
@@ -15,8 +15,8 @@ import static org.jooq.generated.Tables.*;
 
 @Controller
 @Secured("ROLE_USER")
-@RequestMapping("user/settings")
-public class SettingsController {
+@RequestMapping("user/settings/account")
+public class AccountSettingsController {
 
     @Autowired
     private DSLContext dslContext;
@@ -24,10 +24,10 @@ public class SettingsController {
     @Autowired
     private HashPasswordEncoder hashPasswordEncoder;
 
-    @GetMapping
-    public ModelAndView settings() {
+    @GetMapping()
+    public ModelAndView accountSettings() {
         ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/settings");
+        mv.setViewName("user/settings/accountSettings");
 
         CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Record r = dslContext.select().from(PERSON).leftJoin(BENUTZER).using(PERSON.PERSONID)
@@ -39,13 +39,13 @@ public class SettingsController {
     }
 
     @PutMapping()
-    public ModelAndView updateData(@RequestParam String vorname,
+    public ModelAndView accountDataUpdate(@RequestParam String vorname,
                                    @RequestParam String nachname,
                                    @RequestParam String benutzername,
                                    @RequestParam String passwort) {
 
         ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/user/settings");
+        mv.setViewName("redirect:/user/settings/account");
 
         // get current logged in user
         CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -83,7 +83,7 @@ public class SettingsController {
     }
 
     @DeleteMapping()
-    public ModelAndView deleteAccount() {
+    public ModelAndView accountDelete() {
         CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         dslContext.deleteFrom(BENUTZER)

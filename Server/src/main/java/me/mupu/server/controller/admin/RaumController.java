@@ -29,8 +29,8 @@ public class RaumController {
         return mv;
     }
 
-    @PutMapping("/edit")
-    public ModelAndView edit(@RequestParam int id,
+    @PutMapping("/edit/{id}")
+    public ModelAndView edit(@PathVariable int id,
                              @RequestParam String ort,
                              @RequestParam int anzahlStuhl,
                              @RequestParam int anzahlTisch,
@@ -38,8 +38,6 @@ public class RaumController {
                              @RequestParam(required = false) boolean whiteboard,
                              @RequestParam(required = false) boolean barrierefrei,
                              @RequestParam(required = false) boolean klimaanlage) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/raum");
 
         dslContext.update(RAUM)
                 .set(RAUM.ORT, ort)
@@ -53,19 +51,7 @@ public class RaumController {
                 .execute();
 
 
-        return mv;
-    }
-
-    @DeleteMapping("/delete/{id}")
-    public ModelAndView delete(@PathVariable(name = "id") int id) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/raum");
-
-        dslContext.deleteFrom(RAUM)
-                .where(RAUM.RAUMID.eq(UInteger.valueOf(id)))
-                .execute();
-
-        return mv;
+        return createDefaultRaumControllerView();
     }
 
     @PostMapping("/add")
@@ -76,8 +62,6 @@ public class RaumController {
                             @RequestParam(required = false) boolean whiteboard,
                             @RequestParam(required = false) boolean barrierefrei,
                             @RequestParam(required = false) boolean klimaanlage) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/raum");
 
         dslContext.insertInto(RAUM)
                 .columns(RAUM.ORT,
@@ -97,6 +81,22 @@ public class RaumController {
                 .execute();
 
 
+        return createDefaultRaumControllerView();
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ModelAndView delete(@PathVariable(name = "id") int id) {
+
+        dslContext.deleteFrom(RAUM)
+                .where(RAUM.RAUMID.eq(UInteger.valueOf(id)))
+                .execute();
+
+        return createDefaultRaumControllerView();
+    }
+
+    private ModelAndView createDefaultRaumControllerView() {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("redirect:/admin/raum");
         return mv;
     }
 }

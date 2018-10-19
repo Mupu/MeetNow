@@ -47,7 +47,7 @@ public class CustomUserService implements UserDetailsService {
     }
 
     public PersonRecord findUserByConfimationToken(String confirmationToken) {
-        // get user
+        // find user
         return dslContext.selectFrom(PERSON)
                 .where(PERSON.TOKEN.eq(confirmationToken))
                 .fetchAny();

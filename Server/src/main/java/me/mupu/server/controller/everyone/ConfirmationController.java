@@ -35,8 +35,9 @@ public class ConfirmationController {
     private CustomUserService userDetailsService;
 
     // Process confirmation link
-    @GetMapping(value = {"/confirm", "/confirmation"})
-    public ModelAndView getConfirmation(@RequestParam(name = "token", required = false) String token, ConfirmationForm confirmationForm) {
+    @GetMapping("/confirmation")
+    public ModelAndView getConfirmation(@RequestParam(name = "token", required = false) String token,
+                                        ConfirmationForm confirmationForm) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/confirmation");
         mv.addObject("confirmationForm", confirmationForm);
@@ -52,12 +53,14 @@ public class ConfirmationController {
         return mv;
     }
 
-    @PostMapping(value = {"/confirm", "/confirmation"})
-    public ModelAndView processConfirmationForm(@Valid ConfirmationForm confirmationForm, BindingResult bindingResult,
+    @PostMapping("/confirmation")
+    public ModelAndView processConfirmationForm(@Valid ConfirmationForm confirmationForm,
+                                                BindingResult bindingResult,
                                                 @RequestParam(name = "token", required = false) String token) {
         ModelAndView mv = new ModelAndView();
-
         mv.setViewName("everyone/confirmation");
+
+        // check if confirmation token exists
         PersonRecord person = userDetailsService.findUserByConfimationToken(token);
         if (person != null) {
 

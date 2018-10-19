@@ -25,7 +25,7 @@
     <th:block th:each="item : ${items}">
         <tr th:if="${items.isEmpty()}" th:text="No entries found!"></tr>
         <tr>
-            <form action="#" th:action="@{raum/edit}" th:method="put">
+            <form action="#" th:action="'/admin/raum/edit/' + ${item.getRaumid()}" th:method="put">
                 <td><input type="text" name="id" th:value="${item.getRaumid()}" readonly /></td>
                 <td><input type="text" name="ort" th:value="${item.getOrt()}" /></td>
                 <td><input type="text" name="anzahlStuhl" th:value="${item.getAnzahlstuhl()}" /></td>
@@ -38,7 +38,7 @@
                 <td><button type="submit">Update</button></td>
             </form>
 
-            <form action="#" th:action="'raum/delete/' + ${item.getRaumid()}" th:method="delete">
+            <form action="#" th:action="'/admin/raum/delete/' + ${item.getRaumid()}" th:method="delete">
                 <td><button type="submit">Delete</button></td>
             </form>
         </tr>
@@ -48,7 +48,7 @@
         <br>
         <td><h2>Add new item</h2></td>
     </tr>
-    <form action="#" th:action="@{raum/add}" method="post">
+    <form action="#" th:action="@{/admin/raum/add}" method="post">
         <tr><td><input type="text" name="ort" placeholder="Ort" /></td></tr>
         <tr><td><input type="text" name="anzahlStuhl" placeholder="AnzahlStuhl" /></td></tr>
         <tr><td><input type="text" name="anzahlTisch" placeholder="AnzahlTisch" /></td></tr>

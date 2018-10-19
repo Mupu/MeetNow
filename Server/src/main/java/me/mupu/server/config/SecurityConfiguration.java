@@ -15,9 +15,10 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(
-        securedEnabled = true,
-        jsr250Enabled = true,
-        prePostEnabled = true)
+        securedEnabled = true
+//        jsr250Enabled = true,
+//        prePostEnabled = true
+)
 public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -40,8 +41,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .authorizeRequests()
                 .antMatchers("/favicon.ico").permitAll()
                 .antMatchers("/", "/home").permitAll()
-                .antMatchers("/register", "/registration").permitAll()
-                .antMatchers("/confirm", "/confirmation").permitAll()
+                .antMatchers("/registration").permitAll()
+                .antMatchers("/confirmation").permitAll()
                 .antMatchers("/login").permitAll()
                 .anyRequest().authenticated()
 

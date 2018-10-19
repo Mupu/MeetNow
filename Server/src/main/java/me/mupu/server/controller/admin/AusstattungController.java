@@ -27,12 +27,10 @@ public class AusstattungController {
         return mv;
     }
 
-    @PutMapping("/edit")
-    public ModelAndView edit(@RequestParam(name = "id") int id,
-                             @RequestParam(name = "name") String name,
-                             @RequestParam(name = "anzahl") String anzahl) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/ausstattung");
+    @PutMapping("/edit/{id}")
+    public ModelAndView edit(@PathVariable int id,
+                             @RequestParam String name,
+                             @RequestParam String anzahl) {
 
         dslContext.update(AUSSTATTUNGSGEGENSTAND)
                 .set(AUSSTATTUNGSGEGENSTAND.NAME, name)
@@ -40,26 +38,22 @@ public class AusstattungController {
                 .where(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(id)))
                 .execute();
 
-        return mv;
+        return createDefaultAusstattungControllerView();
     }
 
     @DeleteMapping("/delete/{id}")
     public ModelAndView delete(@PathVariable(name = "id") int id) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/ausstattung");
 
         dslContext.deleteFrom(AUSSTATTUNGSGEGENSTAND)
                 .where(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID.eq(UInteger.valueOf(id)))
                 .execute();
 
-        return mv;
+        return createDefaultAusstattungControllerView();
     }
 
     @PostMapping("/add")
     public ModelAndView add(@RequestParam(name = "name") String name,
-                               @RequestParam(name = "anzahl") int anzahl) {
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("redirect:/admin/ausstattung");
+                            @RequestParam(name = "anzahl") int anzahl) {
 
         dslContext.insertInto(AUSSTATTUNGSGEGENSTAND)
                 .columns(AUSSTATTUNGSGEGENSTAND.NAME,
@@ -68,7 +62,12 @@ public class AusstattungController {
                         UInteger.valueOf(anzahl))
                 .execute();
 
+        return createDefaultAusstattungControllerView();
+    }
 
+    private ModelAndView createDefaultAusstattungControllerView() {
+        ModelAndView mv = new ModelAndView();
+        mv.setViewName("redirect:/admin/ausstattung");
         return mv;
     }
 }

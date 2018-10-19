@@ -51,7 +51,7 @@ public class CustomUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return userdata.getIsenabled().byteValue() == 1;
+        return true;
     }
-
+    // todo maybe do somethings with this ?
 }

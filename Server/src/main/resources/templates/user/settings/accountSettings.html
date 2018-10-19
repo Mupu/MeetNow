@@ -4,12 +4,13 @@
 </head>
 <body>
 <h1>SETTINGS</h1>
-<p><a href="/user">User Home here</a></p>
+<p><a href="/user">User Home</a></p>
+<p><a href="/user/settings">Settings</a></p>
 
 <div th:if="${param.dataChanged}"> Succsessfully changed your credentials.</div>
 <div th:if="${param.dataChangedError}"> Could not change your credentials.</div>
 
-<form action="#" th:action="@{/user/settings}" th:method="put">
+<form action="#" th:action="@{/user/settings/account}" th:method="put">
     <table>
         <tbody>
             <tr>
@@ -49,6 +50,6 @@
 <div>
     <td th:text="'passwort:' + ${userdata.get(8)}">...</td>
 </div>
-<form th:action="@{/user/settings}" th:method="DELETE"><input type="submit" value="DELETE ACCOUNT"/></form>
+<form th:action="@{/user/settings/account}" th:method="DELETE"><input type="submit" value="DELETE ACCOUNT"/></form>
 </body>
 </html>

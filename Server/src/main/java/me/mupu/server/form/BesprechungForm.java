@@ -19,7 +19,7 @@ public class BesprechungForm {
     private String thema;
 
     @NotNull
-    private int raumId = -1;
+    private int raumId = -1;    // -1 one is also used to check if the user came back to this site or just requested it
 
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     @FutureOrPresent

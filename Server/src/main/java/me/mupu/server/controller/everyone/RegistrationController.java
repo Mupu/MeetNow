@@ -22,7 +22,7 @@ public class RegistrationController {
     private RegistrationService registrationService;
 
 
-    @GetMapping(value = {"/registration", "/register"})
+    @GetMapping("/registration")
     public ModelAndView registration(RegistrationForm registrationForm) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/registration");
@@ -31,7 +31,7 @@ public class RegistrationController {
         return mv;
     }
 
-    @PostMapping(value = {"/registration", "/register"})
+    @PostMapping("/registration")
     public ModelAndView acceptForm(@Valid RegistrationForm registrationForm, BindingResult bindingResult, HttpServletRequest request) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/registration");

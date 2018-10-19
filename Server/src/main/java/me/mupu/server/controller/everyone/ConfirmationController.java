@@ -36,14 +36,13 @@ public class ConfirmationController {
 
     // Process confirmation link
     @GetMapping("/confirmation")
-    public ModelAndView getConfirmation(@RequestParam(name = "token", required = false) String token,
+    public ModelAndView getConfirmation(@RequestParam(required = false) String token,
                                         ConfirmationForm confirmationForm) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/confirmation");
         mv.addObject("confirmationForm", confirmationForm);
 
         PersonRecord person = userDetailsService.findUserByConfimationToken(token);
-
         if (person != null) {
             mv.addObject("confirmationToken", person.getToken());
         } else {
@@ -56,7 +55,7 @@ public class ConfirmationController {
     @PostMapping("/confirmation")
     public ModelAndView processConfirmationForm(@Valid ConfirmationForm confirmationForm,
                                                 BindingResult bindingResult,
-                                                @RequestParam(name = "token", required = false) String token) {
+                                                @RequestParam String token) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/confirmation");
 
@@ -99,7 +98,6 @@ public class ConfirmationController {
             }
         } else {
             mv.addObject("invalidToken", "Oops! This is an invalid confirmation link.");
-
         }
 
         return mv;

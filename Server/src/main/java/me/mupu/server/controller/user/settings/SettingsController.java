@@ -18,21 +18,10 @@ import static org.jooq.generated.Tables.*;
 @RequestMapping("user/settings")
 public class SettingsController {
 
-    @Autowired
-    private DSLContext dslContext;
-
-
     @GetMapping()
     public ModelAndView settings() {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/settings/settings");
-
-        CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Record r = dslContext.select().from(PERSON).leftJoin(BENUTZER).using(PERSON.PERSONID)
-                .where(BENUTZER.BENUTZERID.eq(user.getUserdata().getBenutzerid()))
-                .fetchOne();
-        mv.addObject("userdata", r);
-
         return mv;
     }
 }

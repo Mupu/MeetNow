@@ -4,12 +4,13 @@
 </head>
 <body>
 <h1>CONFIRMATION</h1>
+<p><a href="/home">Home</a></p>
 <p><a href="/login">Login</a></p>
 
 <div class="container">
     <div class="row">
         <div class="col-md-6 col-md-offset-3">
-            <form action="#" th:if="!${invalidToken} + !${successMessage}" th:action="@{/confirmation}" th:object="${confirmationForm}" method="post">
+            <form action="#" th:if="!${invalidToken} and !${successMessage}" th:action="@{/confirmation}" th:object="${confirmationForm}" method="post">
                 <table>
                     <tr>
                         <td>Benutzername:</td>

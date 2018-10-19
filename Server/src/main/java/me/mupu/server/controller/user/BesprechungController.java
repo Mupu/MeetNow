@@ -34,6 +34,7 @@ import static org.jooq.impl.DSL.inline;
 @Secured("ROLE_USER")
 @RequestMapping("user")
 public class BesprechungController {
+    // todo check for wrong inputs -> for example if the room id rly exists and is available, if the count of item is legit ...
 
     @Autowired
     private DSLContext dslContext;
@@ -155,7 +156,6 @@ public class BesprechungController {
     public ModelAndView getEditBesprechung(@PathVariable int besprechungId,
                                            BesprechungForm besprechungForm,
                                            RegistrationForm registrationForm) {
-        System.out.println("EDIT GET");
 
         // get current logged in user
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
@@ -175,10 +175,7 @@ public class BesprechungController {
     public ModelAndView editBesprechung(@PathVariable int besprechungId,
                                         @Valid BesprechungForm besprechungForm,
                                         BindingResult bindingResult,
-                                        RegistrationForm registrationForm,
-                                        BindingResult bindingResulttest) {
-        System.out.println("EDIT PUT");
-
+                                        RegistrationForm registrationForm) {
 
         // get current logged in user
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
@@ -219,6 +216,24 @@ public class BesprechungController {
                 besprechung);
     }
 
+    @DeleteMapping("/deleteBesprechung/{besprechungId}")
+    public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
+
+        // get current logged in user
+        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
+
+        // check if user owns that meeting
+        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
+                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
+                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
+                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                .fetchSingle();
+
+        dslContext.deleteFrom(BESPRECHUNG).where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid())).execute();
+        return new ModelAndView("redirect:/user/termine");
+    }
+
+    // clean up registration
     @PostMapping("/registration/{besprechungId}")
     public ModelAndView registerForm(@PathVariable int besprechungId,
                                      @Valid RegistrationForm registrationForm,
@@ -226,7 +241,6 @@ public class BesprechungController {
                                      BesprechungForm besprechungForm,
                                      HttpServletRequest request) {
 
-        System.out.println("registration POST");
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/editBesprechung");
 
@@ -275,25 +289,6 @@ public class BesprechungController {
         mv.addObject("bId", besprechung.getBesprechungid());
         return mv;
     }
-
-    @DeleteMapping("/deleteBesprechung/{besprechungId}")
-    public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
-
-        // get current logged in user
-        BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
-
-        // check if user owns that meeting
-        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
-
-        dslContext.deleteFrom(BESPRECHUNG).where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid())).execute();
-        System.out.println("DELETE BESPRECHUNG" + besprechung.getBesprechungid());
-        return new ModelAndView("redirect:/user/termine");
-    }
-
     /**
      * Adds/removes the users to/from the database based on the selection in besprechungForm
      */
@@ -355,7 +350,6 @@ public class BesprechungController {
     /**
      * Adds/removes the items to/from the database based on the selection in besprechungForm
      */
-    // todo check for changed inputs ( [id : count] <---- )
     private void updateAusleiheDatabase(BesprechungRecord besprechung, BesprechungForm besprechungForm) {
 
         Result<AusleiheRecord> previousItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
@@ -451,7 +445,7 @@ public class BesprechungController {
                 besprechungForm.getZeitraumEnde()
         );
         // select items
-        besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung, availableItems));
+        besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung));
 
 
         Result<RaumRecord> availableRooms = getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
@@ -469,11 +463,9 @@ public class BesprechungController {
         return mv;
     }
 
-    private String[] getSelectedItemsForThymeleaf(BesprechungRecord besprechung, Result<Record3<UInteger, String, Integer>> availableItems) {
+    private String[] getSelectedItemsForThymeleaf(BesprechungRecord besprechung) {
         Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
 
-        System.out.println(availableItems);
-        System.out.println(currentlyReservedItems);
         // convert stream to string stream
         Stream<String> ris = currentlyReservedItems.stream().map(ri ->
                 String.valueOf(ri.getAusstattungsgegenstandid()) + ":" + String.valueOf(ri.getAnzahl())

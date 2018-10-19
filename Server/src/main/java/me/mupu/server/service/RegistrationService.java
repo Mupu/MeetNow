@@ -46,7 +46,7 @@ public class RegistrationService {
 			mail.setSubject("Registration Confirmation");
 			mail.setText("To confirm your e-mail address, please click the link below:\n"
 					+ appUrl + "/confirmation?token=" + person.getToken());
-			mail.setFrom("noreply@domain.com");
+			mail.setFrom("noreply@" + request.getServerName());
 
 			emailService.sendEmail(mail);
 		} catch (Exception e) {

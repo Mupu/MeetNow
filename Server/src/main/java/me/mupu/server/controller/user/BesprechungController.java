@@ -35,6 +35,7 @@ import static org.jooq.impl.DSL.inline;
 @RequestMapping("user")
 public class BesprechungController {
     // todo check for wrong inputs -> for example if the room id rly exists and is available, if the count of item is legit ...
+    // todo add user email next to name if name exists twice or more
 
     @Autowired
     private DSLContext dslContext;
@@ -241,52 +242,33 @@ public class BesprechungController {
                                      BesprechungForm besprechungForm,
                                      HttpServletRequest request) {
 
-        ModelAndView mv = new ModelAndView();
-        mv.setViewName("user/editBesprechung");
-
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         BesprechungRecord besprechung = isOwnerOfRoom(user.getPersonid(), besprechungId);
 
-        Result<RaumRecord> rooms = getAvailableRooms(besprechung.getZeitraumstart(), besprechung.getZeitraumende());
-        // add current room to the list as current room
-        rooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(besprechung.getRaumid())).fetchSingle());
-
-        Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
-        // remove yourself from list
-        userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
-
-        //             id        name    anzahl
-        Result<Record3<UInteger, String, Integer>> availableItems = getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
-
-        Result<AusleiheRecord> currentlyReservedItems = dslContext.selectFrom(AUSLEIHE).where(AUSLEIHE.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
-
-        // add currentlyReservedItems to available to get complete selection for this meeting
-        currentlyReservedItems.forEach(ri ->
-                availableItems.forEach(ai -> {
-                    if (ri.getAusstattungsgegenstandid().intValue() == ((UInteger) ai.get(0)).intValue()) {
-                        ai.set(AUSSTATTUNGSGEGENSTAND.ANZAHL, ri.getAnzahl().add((int) ai.getValue("Anzahl")));
-                    }
-                })
+        ModelAndView mv = createDefaultEditBesprechungView(
+                user.getPersonid(),
+                besprechungForm,
+                registrationForm,
+                besprechung
         );
+
 
         if (!bindingResult.hasErrors()) {
             PersonRecord addedUser;
             if ((addedUser = registrationService.registerUser(registrationForm, request)) != null) {
                 mv.addObject("success", "Registered: " + addedUser.getVorname() + " " + addedUser.getNachname());
+
                 // add newly added user to list
-                userList.add(addedUser);
+                ((Result<PersonRecord>) mv.getModel().get("userList")).add(addedUser);
+
+                // reset registration form
+                mv.getModel().put("registrationForm", new RegistrationForm());
             } else
-                mv.addObject("error", "Couldnt add user");
+                mv.addObject("error", "Couldnt add user: Email already exists!");
         }
 
-        mv.addObject("registrationForm", registrationForm);
-        mv.addObject("besprechungForm", besprechungForm);
-        mv.addObject("rooms", rooms);
-        mv.addObject("gegenstandList", availableItems);
-        mv.addObject("userList", userList);
-        mv.addObject("bId", besprechung.getBesprechungid());
         return mv;
     }
     /**

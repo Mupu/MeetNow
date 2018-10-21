@@ -35,8 +35,8 @@ import static org.jooq.impl.DSL.inline;
 @Secured("ROLE_USER")
 @RequestMapping("user")
 public class BesprechungController {
-    // todo check for wrong inputs -> for example if the room id rly exists and is available, if the count of item is legit ...
     // todo add user email next to name if name exists twice or more
+    // todo add notification if you gegenstand has been deleted by admin
 
     @Autowired
     private DSLContext dslContext;
@@ -205,9 +205,10 @@ public class BesprechungController {
 
         // check if response is still valid
         if (!bindingResult.hasErrors())
-            if (!isBesprechungsFormResponseValid(besprechung, besprechungForm))
+            if (!isBesprechungsFormResponseValid(besprechung, besprechungForm)) {
                 bindingResult.reject("isBesprechungsFormResponseValid", "Inputs were invalid. Please try again.");
-
+                besprechungForm = new BesprechungForm(); // reset page
+            }
         if (!bindingResult.hasErrors()) {
             // todo make this into own method called change date
             // datetime pattern
@@ -623,7 +624,7 @@ public class BesprechungController {
                 .groupBy(combined.field("AusstattungsgegenstandId"));
 
 
-        Result<Record3<UInteger, String, Integer>> listWithName = dslContext
+        return dslContext
                 .select(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID,
                         AUSSTATTUNGSGEGENSTAND.NAME,
                         availableitems.field("Anzahl").cast(Integer.class).as("Anzahl"))
@@ -631,8 +632,6 @@ public class BesprechungController {
                 .leftJoin(AUSSTATTUNGSGEGENSTAND).using(AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID)
                 .where(availableitems.field("Anzahl").cast(Integer.class).gt(0))
                 .fetch();
-
-        return listWithName;
     }
 
     private Result<RaumRecord> getAvailableRooms(Date startDate, Date endDate) {

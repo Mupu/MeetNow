@@ -13,7 +13,7 @@ import java.security.SecureRandom;
 
 public class HashPasswordEncoder implements PasswordEncoder {
 
-    final Log logger = LogFactory.getLog(getClass());
+    private final Log logger = LogFactory.getLog(getClass());
 
     private static byte[] getSalt() throws NoSuchAlgorithmException {
         SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");

@@ -9,6 +9,7 @@ import org.jooq.generated.tables.records.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.Nullable;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
@@ -50,23 +51,19 @@ public class BesprechungController {
      */
 
     @GetMapping("/neueBesprechung")
-    public ModelAndView besprechungForm(BesprechungForm besprechungForm) {
+    public ModelAndView besprechungForm(BesprechungForm besprechungForm,
+                                        RegistrationForm registrationForm) {
 
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        // default start end date
-        Calendar c = Calendar.getInstance();
-        besprechungForm.setZeitraumStart(c.getTime());
-
-        c.add(Calendar.HOUR, 1);
-        besprechungForm.setZeitraumEnde(c.getTime());
-
-        return createDefaultNeueBesprechungView(user, besprechungForm, null);
+        return createDefaultNeueBesprechungView(user, besprechungForm, registrationForm);
     }
 
     @PostMapping("/neueBesprechung")
-    public ModelAndView neueBesprechung(@Valid BesprechungForm besprechungForm, BindingResult bindingResult) {
+    public ModelAndView neueBesprechung(@Valid BesprechungForm besprechungForm,
+                                        BindingResult bindingResult,
+                                        RegistrationForm registrationForm) {
 
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
@@ -75,9 +72,16 @@ public class BesprechungController {
         if (raum == null)
             bindingResult.rejectValue("raumId", "raumId", "Bitte wähle einen Raum aus");
 
+        // check end date
         if (besprechungForm.getZeitraumStart() == null || besprechungForm.getZeitraumEnde() == null
                 || besprechungForm.getZeitraumStart().compareTo(besprechungForm.getZeitraumEnde()) >= 0)
             bindingResult.rejectValue("zeitraumEnde", "zeitraumEnde", "Endzeitpunkt muss nach Startzeitpunkt liegen");
+
+        // check if response is still valid
+        if (!bindingResult.hasErrors())
+            if (!isBesprechungsFormResponseValid(besprechungForm))
+                bindingResult.reject("isBesprechungsFormResponseValid", "Inputs were invalid. Please try again.");
+
 
         if (!bindingResult.hasErrors()) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -121,25 +125,35 @@ public class BesprechungController {
                             .execute();
                 }
             }
-
-            return createDefaultNeueBesprechungView(user, besprechungForm, "redirect:/user/termine");
+            return new ModelAndView("redirect:/user/termine");
         }
 
-        return createDefaultNeueBesprechungView(user, besprechungForm, null);
+        return createDefaultNeueBesprechungView(user, besprechungForm, registrationForm);
     }
 
-    private ModelAndView createDefaultNeueBesprechungView(BenutzerRecord user, BesprechungForm besprechungForm, String viewName) {
+    private ModelAndView createDefaultNeueBesprechungView(BenutzerRecord user,
+                                                          BesprechungForm besprechungForm,
+                                                          RegistrationForm registrationForm) {
         ModelAndView mv = new ModelAndView();
-        if (viewName == null)
         mv.setViewName("user/neueBesprechung");
-        else
-        mv.setViewName(viewName);
+
+
+        // default start end date
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.DAY_OF_MONTH, 1);
+        c.set(Calendar.MINUTE, 0);
+
+        besprechungForm.setZeitraumStart(c.getTime());
+
+        c.add(Calendar.HOUR, 1);
+        besprechungForm.setZeitraumEnde(c.getTime());
 
 
         Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
         // remove yourself from list
         userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
 
+        mv.addObject("registrationForm", registrationForm);
         mv.addObject("userList", userList);
         mv.addObject("userId", user.getPersonid().intValue());
         mv.addObject("gegenstandList", getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
@@ -189,6 +203,10 @@ public class BesprechungController {
                 || besprechungForm.getZeitraumStart().compareTo(besprechungForm.getZeitraumEnde()) >= 0)
             bindingResult.rejectValue("zeitraumEnde", "zeitraumEnde", "Endzeitpunkt muss nach Startzeitpunkt liegen");
 
+        // check if response is still valid
+        if (!bindingResult.hasErrors())
+            if (!isBesprechungsFormResponseValid(besprechung, besprechungForm))
+                bindingResult.reject("isBesprechungsFormResponseValid", "Inputs were invalid. Please try again.");
 
         if (!bindingResult.hasErrors()) {
             // todo make this into own method called change date
@@ -235,8 +253,9 @@ public class BesprechungController {
     }
 
     // clean up registration
-    @PostMapping("/registration/{besprechungId}")
-    public ModelAndView registerForm(@PathVariable int besprechungId,
+    @PostMapping(value = {"{path}/registration/{besprechungId}", "{path}/registration"})
+    public ModelAndView registerForm(@PathVariable(required = false) Integer besprechungId,
+                                     @PathVariable String path,
                                      @Valid RegistrationForm registrationForm,
                                      BindingResult bindingResult,
                                      BesprechungForm besprechungForm,
@@ -245,14 +264,23 @@ public class BesprechungController {
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        BesprechungRecord besprechung = isOwnerOfRoom(user.getPersonid(), besprechungId);
 
-        ModelAndView mv = createDefaultEditBesprechungView(
-                user.getPersonid(),
-                besprechungForm,
-                registrationForm,
-                besprechung
-        );
+        ModelAndView mv;
+        if (path.equals("editBesprechung")) {
+            BesprechungRecord besprechung = isOwnerOfRoom(user.getPersonid(), besprechungId);
+
+            mv = createDefaultEditBesprechungView(
+                    user.getPersonid(),
+                    besprechungForm,
+                    registrationForm,
+                    besprechung
+            );
+        } else
+            mv = createDefaultNeueBesprechungView(
+                    user,
+                    besprechungForm,
+                    registrationForm
+            );
 
 
         if (!bindingResult.hasErrors()) {
@@ -271,6 +299,7 @@ public class BesprechungController {
 
         return mv;
     }
+
     /**
      * Adds/removes the users to/from the database based on the selection in besprechungForm
      */
@@ -407,7 +436,7 @@ public class BesprechungController {
 
 
         // set default values
-        // only set these default values of they havent been set yet (on get request)
+        // only set these default values if they havent been set yet (on get request)
         if (besprechungForm.getRaumId() == -1) {
             besprechungForm.setThema(besprechung.getThema());
             besprechungForm.setZeitraumStart(besprechung.getZeitraumstart());
@@ -430,10 +459,11 @@ public class BesprechungController {
         besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung));
 
 
-        Result<RaumRecord> availableRooms = getAvailableRooms(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde());
-        // add currently selected room to the list as current room
-        availableRooms.add(0, dslContext.selectFrom(RAUM).where(RAUM.RAUMID.eq(UInteger.valueOf(besprechungForm.getRaumId()))).fetchSingle());
-
+        Result<RaumRecord> availableRooms = getAvailableRooms(
+                besprechung.getBesprechungid(),
+                besprechungForm.getZeitraumStart(),
+                besprechungForm.getZeitraumEnde()
+        );
 
         // pass information to mv
         mv.addObject("registrationForm", registrationForm);
@@ -480,11 +510,72 @@ public class BesprechungController {
                 .fetchSingle();
     }
 
+    /**
+     * Checks if the results are valid.
+     * Example: it checks if the room the user selected is still free.
+     */
+    private boolean isBesprechungsFormResponseValid(BesprechungForm besprechungForm) {
+        return isBesprechungsFormResponseValid(null, besprechungForm);
+    }
+
+    /**
+     * Checks if the results are valid.
+     * Example: it checks if the room the user selected is still free.
+     */
+    private boolean isBesprechungsFormResponseValid(BesprechungRecord besprechung, BesprechungForm besprechungForm) {
+        UInteger id = null;
+        Date start;
+        Date end;
+
+        if (besprechung != null) {
+            id = besprechung.getBesprechungid();
+            start = besprechung.getZeitraumstart();
+            end = besprechung.getZeitraumende();
+        } else {
+            start = besprechungForm.getZeitraumStart();
+            end = besprechungForm.getZeitraumEnde();
+        }
+
+
+        // room valid ?
+        if (getAvailableRooms(id, start, end).stream().noneMatch(r ->
+                r.getRaumid().intValue() == (besprechungForm.getRaumId())))
+            return false;
+
+        Result<PersonRecord> allExistingUsers = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
+        // users valid ?
+        if (!Arrays.stream(besprechungForm.getInvitedUsers()).allMatch(u ->
+                allExistingUsers.stream().anyMatch(au ->
+                        au.getPersonid().intValue() == Integer.valueOf(u)
+
+                )
+        ))
+            return false;
+
+
+        // item string to map
+        Map<Integer, Integer> besprechungChosenItemsMap = new HashMap<>();
+        Set<Integer> besprechungChosenItemsMapKeySet = besprechungChosenItemsMap.keySet();
+        for (String s : besprechungForm.getChosenItemsCount()) {
+            String[] parts = s.split(":");
+            besprechungChosenItemsMap.put(Integer.valueOf(parts[0]), Integer.valueOf(parts[1]));
+        }
+
+        // items valid ?
+        return getAvailableItems(id, start, end).stream().allMatch(ai ->
+                besprechungChosenItemsMapKeySet.stream().anyMatch(k ->
+                        k == ((UInteger) ai.get(0)).intValue()
+                )
+                        && besprechungChosenItemsMap.get(((UInteger) ai.get(0)).intValue()) >= 0
+                        && besprechungChosenItemsMap.get(((UInteger) ai.get(0)).intValue()) <= (Integer) ai.get(2)
+        );
+    }
+
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {
         return this.getAvailableItems(null, startDate, endDate);
     }
 
-    private Result<Record3<UInteger, String, Integer>> getAvailableItems(UInteger besprechungId, Date startDate, Date endDate) {
+    private Result<Record3<UInteger, String, Integer>> getAvailableItems(@Nullable UInteger besprechungId, Date startDate, Date endDate) {
 
         Table<BesprechungRecord> meetings = dslContext
                 .selectFrom(BESPRECHUNG)
@@ -545,11 +636,24 @@ public class BesprechungController {
     }
 
     private Result<RaumRecord> getAvailableRooms(Date startDate, Date endDate) {
-        Table<BesprechungRecord> bussyRooms = dslContext
-                .selectFrom(BESPRECHUNG)
-                .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
-                .groupBy(BESPRECHUNG.RAUMID).asTable();
+        return getAvailableRooms(null, startDate, endDate);
+    }
+
+    private Result<RaumRecord> getAvailableRooms(@Nullable UInteger besprechungId, Date startDate, Date endDate) {
+        Table<BesprechungRecord> bussyRooms;
+        if (besprechungId == null)
+            bussyRooms = dslContext
+                    .selectFrom(BESPRECHUNG)
+                    .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                    .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                    .groupBy(BESPRECHUNG.RAUMID).asTable();
+        else
+            bussyRooms = dslContext
+                    .selectFrom(BESPRECHUNG)
+                    .where(DSL.timestamp(startDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                    .or(DSL.timestamp(endDate).between(BESPRECHUNG.ZEITRAUMSTART, BESPRECHUNG.ZEITRAUMENDE))
+                    .and(BESPRECHUNG.BESPRECHUNGID.ne(besprechungId))
+                    .groupBy(BESPRECHUNG.RAUMID).asTable();
 
         return dslContext
                 .select()

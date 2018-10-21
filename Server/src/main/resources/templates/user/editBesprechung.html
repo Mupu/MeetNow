@@ -7,11 +7,11 @@
 <body>
 <h1>EDIT BESPRECHUNG</h1>
 <p><a href="/user">User Home</a></p>
-
 <tbody>
 <table>
     <form action="#" th:object="${besprechungForm}" th:action="'/user/editBesprechung/' + ${bId}" th:method="put">
 
+        <label th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></label>
         <tr>
             <td th:text="Thema"></td>
             <td><input type="text" th:field="*{thema}"/></td>
@@ -87,7 +87,8 @@
                     </li>
                 </ul>
             </td>
-
+        </tr>
+        <tr>
             <td><label>Gegenstände:</label></td>
             <td>
                 <ul>
@@ -105,10 +106,9 @@
                 </ul>
             </td>
         </tr>
-
         <tr>
             <td>
-                <button th:type="submit" th:text="'Update'"></button>
+                <button type="submit" th:text="Update" ></button>
             </td>
         </tr>
     </form>
@@ -117,7 +117,7 @@
     <tr>
         <td><label>Add new User</label></td>
     </tr>
-    <form th:object="${registrationForm}" th:action="'/user/registration/' + ${bId}"  th:method="post">
+    <form th:object="${registrationForm}" th:action="'/user/editBesprechung/registration/' + ${bId}"  th:method="post">
         <tr>
             <td>Vorname:</td>
             <td><input type="text" th:field="*{vorname}"/></td>

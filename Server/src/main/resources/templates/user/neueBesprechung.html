@@ -11,7 +11,7 @@
 <table>
     <tbody>
     <form action="#" th:object="${besprechungForm}" th:action="@{/user/neueBesprechung}" th:method="post">
-
+        <label th:if="${#fields.hasGlobalErrors()}" th:errors="*{global}"></label>
         <tr>
             <td th:text="Thema"></td>
             <td><input type="text" th:field="*{thema}"/></td>
@@ -87,7 +87,8 @@
                     </li>
                 </ul>
             </td>
-
+        </tr>
+        <tr>
             <td><label>Gegenstände:</label></td>
             <td>
                 <ul>
@@ -113,6 +114,39 @@
         </tr>
     </form>
     </tbody>
+</table>
+<table>
+    <tr>
+        <td><label>Add new User</label></td>
+    </tr>
+    <form th:object="${registrationForm}" th:action="@{/user/neueBesprechung/registration}"  th:method="post">
+        <tr>
+            <td>Vorname:</td>
+            <td><input type="text" th:field="*{vorname}"/></td>
+            <td th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}"></td>
+        </tr>
+        <tr>
+            <td>Nachname:</td>
+            <td><input type="text" th:field="*{nachname}"/></td>
+            <td th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}"></td>
+        </tr>
+        <tr>
+            <td>Email:</td>
+            <td><input type="text" th:field="*{email}"/></td>
+            <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></td>
+        </tr>
+        <tr>
+            <td>
+                <button type="submit" th:text="'Submit'"></button>
+            </td>
+        </tr>
+    </form>
+    <tr th:if="${success}">
+        <p th:text="${success}"></p>
+    </tr>
+    <tr th:if="${error}">
+        <p th:text="${error}"></p>
+    </tr>
 </table>
 </body>
 </html>

@@ -1,3 +1,12 @@
+# userVerwalten
+
+select p.Vorname, p.Nachname, p.Email, b.*, group_concat(r.Name) as rechte from benutzer as b
+left join person p on b.PersonId = p.PersonId
+right join user_role u on b.BenutzerId = u.BenutzerId
+right join role r on u.RoleId = r.RoleId
+group by b.BenutzerId
+;
+
 # verfügbare gegenstände
 select AusstattungsgegenstandId, sum(Anzahl) as verfugbar                   # übrige gegenstände zum gewählten zeitraum
 from (select AusstattungsgegenstandId, Anzahl from ausstattungsgegenstand   # alle gegenstände mit max anzahl

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="de" xmlns:th="http://www.thymeleaf.org" :>
+<head>
+    <meta charset="UTF-8">
+    <title>User verwalten</title>
+</head>
+<body>
+<h1>User verwalten</h1>
+<p><a href="/superadmin">Superadmin Home</a></p>
+<table>
+    <thead>
+    <tr>
+        <td>Vorname</td>
+        <td>Nachname</td>
+        <td>E-Mail</td>
+        <td>Benutzername</td>
+        <td>Passwort ändern</td>
+        <td>Rechte</td>
+        <td>Besprechungen</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:if="${userList.isEmpty()}"><label>Keine user Vorhanden</label></tr>
+    <tr name="errors" th:object="${userVerwaltenForm}">
+        <td th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}"></td>
+        <td th:unless="${#fields.hasErrors('vorname')}"></td>
+
+        <td th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}"></td>
+        <td th:unless="${#fields.hasErrors('nachname')}" ></td>
+
+        <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></td>
+        <td th:unless="${#fields.hasErrors('email')}" ></td>
+
+        <td th:if="${#fields.hasErrors('benutzername')}" th:errors="*{benutzername}"></td>
+        <td th:unless="${#fields.hasErrors('benutzername')}" ></td>
+
+        <td th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}"></td>
+        <td th:unless="${#fields.hasErrors('passwort')}" ></td>
+    </tr>
+    <th:block th:each="user : ${userList}">
+        <tr>
+            <form action="#" th:object="${userVerwaltenForm}" th:action="'/superadmin/userVerwalten/edit/' + ${user.get('BenutzerId')}" th:method="put">
+                <td><input type="text" th:id="vorname" th:name="vorname" th:value="${user.get('Vorname')}"/></td>
+                <td><input type="text" th:id="nachname" th:name="nachname" th:value="${user.get('Nachname')}"/></td>
+                <td><input type="text" th:id="email" th:name="email" th:value="${user.get('Email')}"/></td>
+                <td><input type="text" th:id="benutzername" th:name="benutzername"
+                           th:value="${user.get('Benutzername')}"/></td>
+                <td><input type="text" th:id="passwort" th:name="passwort"/></td>
+
+                <td><details>
+                    <ul>
+                        <li th:each="role: ${roles}">
+                            <input type="checkbox"
+                                   th:id="ranks"
+                                   th:name="ranks"
+                                   th:value="${role.getRoleid()}"
+                                   th:checked="${userRanks.get(user.get('BenutzerId')).contains(#strings.toString(role.getRoleid()))} ? 'checked'"/>
+                            <label th:text="${role.getName()}"></label>
+                        </li>
+                    </ul>
+                </details></td>
+
+                <td><details>
+                    <summary>Comming soon..</summary>
+                    <ul>
+
+                    </ul>
+                </details></td>
+
+                <td>
+                    <button type="submit">Update</button>
+                </td>
+            </form>
+
+            <form action="#" th:action="'/superadmin/userVerwalten/delete/' + ${user.get('BenutzerId')}"
+                  th:method="delete">
+                <td>
+                    <button type="submit">Delete</button>
+                </td>
+            </form>
+        </tr>
+    </th:block>
+    </tbody>
+</table>
+
+</body>
+</html>

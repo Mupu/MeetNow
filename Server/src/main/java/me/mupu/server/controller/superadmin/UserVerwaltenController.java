@@ -162,7 +162,7 @@ public class UserVerwaltenController {
                     .columns(PERSON.VORNAME,
                             PERSON.NACHNAME,
                             PERSON.EMAIL,
-                            PERSON.TOKEN)
+                            PERSON.CONFIRMATIONTOKEN)
                     .values(superadminAddUserForm.getSAUFvorname(),
                             superadminAddUserForm.getSAUFnachname(),
                             superadminAddUserForm.getSAUFemail(),

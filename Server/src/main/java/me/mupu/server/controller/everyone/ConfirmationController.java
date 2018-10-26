@@ -44,7 +44,7 @@ public class ConfirmationController {
 
         PersonRecord person = userDetailsService.findUserByConfimationToken(token);
         if (person != null) {
-            mv.addObject("confirmationToken", person.getToken());
+            mv.addObject("confirmationToken", person.getConfirmationtoken());
         } else {
             mv.addObject("invalidToken", "Oops! This is an invalid confirmation link.");
         }
@@ -85,16 +85,16 @@ public class ConfirmationController {
                                             .fetchOne().getRoleid())
                             .execute();
 
-                    dslContext.update(PERSON).set(PERSON.TOKEN, "").where(PERSON.PERSONID.eq(person.getPersonid())).execute();
+                    dslContext.update(PERSON).set(PERSON.CONFIRMATIONTOKEN, "").where(PERSON.PERSONID.eq(person.getPersonid())).execute();
 
                     mv.addObject("successMessage", "Your account has been created!");
                 } catch (Exception e) {
                     e.printStackTrace();
-                    mv.addObject("confirmationToken", person.getToken());
+                    mv.addObject("confirmationToken", person.getConfirmationtoken());
                     mv.addObject("nameTaken", "Username already in use. Please provide a different name.");
                 }
             } else {
-                mv.addObject("confirmationToken", person.getToken());
+                mv.addObject("confirmationToken", person.getConfirmationtoken());
             }
         } else {
             mv.addObject("invalidToken", "Oops! This is an invalid confirmation link.");

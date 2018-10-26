@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS Person (
 	Vorname CHAR(16) NOT NULL,
 	Nachname CHAR(16) NOT NULL,
 	Email CHAR(32) NOT NULL,
-	Token CHAR(36) NOT NULL,
+	ConfirmationToken CHAR(36) NOT NULL,
+	ResetPasswordToken CHAR(36) NOT NULL,
 	PRIMARY KEY (PersonId),
 	UNIQUE INDEX Email (Email)
 );

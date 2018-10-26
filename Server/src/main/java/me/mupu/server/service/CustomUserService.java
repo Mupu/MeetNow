@@ -51,7 +51,7 @@ public class CustomUserService implements UserDetailsService {
             return null;
         // find user
         return dslContext.selectFrom(PERSON)
-                .where(PERSON.TOKEN.eq(confirmationToken))
+                .where(PERSON.CONFIRMATIONTOKEN.eq(confirmationToken))
                 .fetchAny();
     }
 

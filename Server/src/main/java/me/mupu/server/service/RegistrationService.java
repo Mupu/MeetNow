@@ -18,41 +18,49 @@ import static org.jooq.generated.Tables.PERSON;
 @Service("registrationService")
 public class RegistrationService {
 
-	@Autowired
-	private DSLContext dslContext;
+    @Autowired
+    private DSLContext dslContext;
 
-	@Autowired
-	private EmailService emailService;
+    @Autowired
+    private EmailService emailService;
 
-	public PersonRecord registerUser(@Valid RegistrationForm registrationForm, HttpServletRequest request) {
-		PersonRecord person;
-		try {
-			// add person to database
-			person = dslContext.insertInto(PERSON)
-					.columns(PERSON.VORNAME,
-							PERSON.NACHNAME,
-							PERSON.EMAIL,
-							PERSON.TOKEN)
-					.values(registrationForm.getVorname(),
-							registrationForm.getNachname(),
-							registrationForm.getEmail(),
-							UUID.randomUUID().toString())
-					.returning().fetchOne();
+    public PersonRecord registerUser(@Valid RegistrationForm registrationForm, HttpServletRequest request) {
+        PersonRecord person;
+        try {
+            // add person to database
+            person = dslContext.insertInto(PERSON)
+                    .columns(PERSON.VORNAME,
+                            PERSON.NACHNAME,
+                            PERSON.EMAIL,
+                            PERSON.CONFIRMATIONTOKEN)
+                    .values(registrationForm.getVorname(),
+                            registrationForm.getNachname(),
+                            registrationForm.getEmail(),
+                            UUID.randomUUID().toString())
+                    .returning().fetchOne();
 
-			String appUrl = request.getScheme() + "://" + request.getServerName();
+            sendConfirmationMail(person, request);
+        } catch (Exception e) {
+            person = null;
+        }
+        return person;
+    }
 
-			SimpleMailMessage mail = new SimpleMailMessage();
-			mail.setTo(person.getEmail());
-			mail.setSubject("Registration Confirmation");
-			mail.setText("To confirm your e-mail address, please click the link below:\n"
-					+ appUrl + "/confirmation?token=" + person.getToken());
-			mail.setFrom("noreply@" + request.getServerName());
+    public boolean sendConfirmationMail(PersonRecord person, HttpServletRequest request) {
+        if (person.getEmail().equals("") || person.getConfirmationtoken() == null || person.getConfirmationtoken().equals(""))
+            return false;
 
-			emailService.sendEmail(mail);
-		} catch (Exception e) {
-			person = null;
-		}
-		return person;
-	}
+        String appUrl = request.getScheme() + "://" + request.getServerName();
+
+        SimpleMailMessage mail = new SimpleMailMessage();
+        mail.setTo(person.getEmail());
+        mail.setSubject("Registration Confirmation");
+        mail.setText("To confirm your e-mail address, please click the link below:\n"
+                + appUrl + "/confirmation?token=" + person.getConfirmationtoken());
+        mail.setFrom("noreply@" + request.getServerName());
+
+        emailService.sendEmail(mail);
+        return true;
+    }
 
 }

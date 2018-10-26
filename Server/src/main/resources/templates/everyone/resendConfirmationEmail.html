@@ -1,0 +1,34 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Resend Confirmation Email</title>
+</head>
+<body>
+<h1>Resend Confirmation Email</h1>
+<p><a href="/login">Login</a></p>
+<p><a href="/registration">Register</a></p>
+<p><a href="/home">Home</a></p>
+
+<table th:if="${success}" >
+    <tr>
+        <p th:text="${success}"></p>
+        <a th:href="@{'http://www.' + ${provider}}" th:text="${provider}"></a>
+    </tr>
+</table>
+<table th:if="${error}" >
+    <tr>
+        <p th:text="${error}"></p>
+    </tr>
+</table>
+<form th:if="!${success}" th:action="@{/resendConfirmationEmail}" method="post">
+    <table >
+        <tr>
+            <td><label> Email: </label></td>
+            <td><input type="text" th:id="email" th:name="email" autofocus/> </td>
+        </tr>
+        <tr>
+            <td><input type="submit" value="Send Email"/></td>
+        </tr>
+    </table>
+</form>
+</body>
+</html>

@@ -7,25 +7,28 @@
 <p><a href="/registration">Register</a></p>
 <p><a href="/home">Home</a></p>
 
-<div th:if="${param.error}"> Invalid username or password. </div>
-<div th:if="${param.logout}"> You have been successfully logged out. </div>
-<div th:if="${param.relog}"> You have been logged out. Please login again. </div>
-<div th:if="${param.accountDeleted}"> Your account has been deleted successfully. </div>
+<div th:if="${param.error}"> Invalid username or password.</div>
+<div th:if="${param.logout}"> You have been successfully logged out.</div>
+<div th:if="${param.relog}"> You have been logged out. Please login again.</div>
+<div th:if="${param.accountDeleted}"> Your account has been deleted successfully.</div>
 <form th:action="@{/login}" method="post">
     <table>
-    <tr>
-        <td><label> User Name: </label></td>
-        <td><input type="text" name="username" autofocus/> </td>
-    </tr>
-    <tr>
-        <td><label> Password: </label>
-        <td><input type="password" name="password"/></td>
-    </tr>
-    <tr>
-        <td><input type="submit" value="Sign In"/></td>
-    </tr>
+        <tr>
+            <td><label> User Name: </label></td>
+            <td><input type="text" name="username" tabindex="1" autofocus/></td>
+        </tr>
+        <tr><td><p><a href="/forgotCredentials/username">Forgot username?</a></p></td></tr>
+
+        <tr>
+            <td><label> Password: </label>
+            <td><input type="password" name="password" tabindex="2"/></td>
+        </tr>
+        <tr><td><p><a href="/forgotCredentials/password">Forgot password?</a></p></td></tr>
+
+        <tr>
+            <td><input type="submit" value="Sign In" tabindex="3"/></td>
+        </tr>
     </table>
-    <p><a href="/forgotCredentials">Forgot username or password?</a></p>
     <p><a href="/resendConfirmationEmail">Didn't receive the confirmation email?</a></p>
 </form>
 </body>

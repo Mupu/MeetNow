@@ -38,7 +38,7 @@ public class RegistrationController {
 
         if (!bindingResult.hasErrors()) {
             if (registrationService.registerUser(registrationForm, request) != null) {
-                mv.addObject("success", "Please confirm your email: ");
+                mv.addObject("success", "Please confirm your SAUFemail: ");
                 mv.addObject("provider", registrationForm.getEmail().split("@")[1]);
             } else
                 mv.addObject("error", "error");

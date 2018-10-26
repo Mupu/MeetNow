@@ -6,10 +6,15 @@ import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import static org.jooq.generated.Tables.*;
 
@@ -40,9 +45,9 @@ public class AccountSettingsController {
 
     @PutMapping()
     public ModelAndView accountDataUpdate(@RequestParam String vorname,
-                                   @RequestParam String nachname,
-                                   @RequestParam String benutzername,
-                                   @RequestParam String passwort) {
+                                          @RequestParam String nachname,
+                                          @RequestParam String benutzername,
+                                          @RequestParam String passwort) {
 
         ModelAndView mv = new ModelAndView();
         mv.setViewName("redirect:/user/settings/account");
@@ -83,7 +88,8 @@ public class AccountSettingsController {
     }
 
     @DeleteMapping()
-    public ModelAndView accountDelete() {
+    public ModelAndView accountDelete(HttpServletRequest request,
+                                      HttpServletResponse response) {
         CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         dslContext.deleteFrom(BENUTZER)
@@ -98,6 +104,11 @@ public class AccountSettingsController {
                 .where(PERSON.PERSONID.eq(user.getUserdata().getPersonid()))
                 .execute();
 
+        // logout the user
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new SecurityContextLogoutHandler().logout(request, response, auth);
+        }
         return new ModelAndView("redirect:/login?accountDeleted");
     }
 }

@@ -26,20 +26,21 @@
         <td th:unless="${#fields.hasErrors('vorname')}"></td>
 
         <td th:if="${#fields.hasErrors('nachname')}" th:errors="*{nachname}"></td>
-        <td th:unless="${#fields.hasErrors('nachname')}" ></td>
+        <td th:unless="${#fields.hasErrors('nachname')}"></td>
 
         <td th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></td>
-        <td th:unless="${#fields.hasErrors('email')}" ></td>
+        <td th:unless="${#fields.hasErrors('email')}"></td>
 
         <td th:if="${#fields.hasErrors('benutzername')}" th:errors="*{benutzername}"></td>
-        <td th:unless="${#fields.hasErrors('benutzername')}" ></td>
+        <td th:unless="${#fields.hasErrors('benutzername')}"></td>
 
         <td th:if="${#fields.hasErrors('passwort')}" th:errors="*{passwort}"></td>
-        <td th:unless="${#fields.hasErrors('passwort')}" ></td>
+        <td th:unless="${#fields.hasErrors('passwort')}"></td>
     </tr>
     <th:block th:each="user : ${userList}">
         <tr>
-            <form action="#" th:object="${userVerwaltenForm}" th:action="'/superadmin/userVerwalten/edit/' + ${user.get('BenutzerId')}" th:method="put">
+            <form action="#" th:object="${userVerwaltenForm}"
+                  th:action="'/superadmin/userVerwalten/edit/' + ${user.get('BenutzerId')}" th:method="put">
                 <td><input type="text" th:id="vorname" th:name="vorname" th:value="${user.get('Vorname')}"/></td>
                 <td><input type="text" th:id="nachname" th:name="nachname" th:value="${user.get('Nachname')}"/></td>
                 <td><input type="text" th:id="email" th:name="email" th:value="${user.get('Email')}"/></td>
@@ -47,25 +48,29 @@
                            th:value="${user.get('Benutzername')}"/></td>
                 <td><input type="text" th:id="passwort" th:name="passwort"/></td>
 
-                <td><details>
-                    <ul>
-                        <li th:each="role: ${roles}">
-                            <input type="checkbox"
-                                   th:id="ranks"
-                                   th:name="ranks"
-                                   th:value="${role.getRoleid()}"
-                                   th:checked="${userRanks.get(user.get('BenutzerId')).contains(#strings.toString(role.getRoleid()))} ? 'checked'"/>
-                            <label th:text="${role.getName()}"></label>
-                        </li>
-                    </ul>
-                </details></td>
+                <td>
+                    <details>
+                        <ul>
+                            <li th:each="role: ${roles}">
+                                <input type="checkbox"
+                                       th:id="ranks"
+                                       th:name="ranks"
+                                       th:value="${role.getRoleid()}"
+                                       th:checked="${userRanks.get(user.get('BenutzerId')).contains(#strings.toString(role.getRoleid()))} ? 'checked'"/>
+                                <label th:text="${role.getName()}"></label>
+                            </li>
+                        </ul>
+                    </details>
+                </td>
 
-                <td><details>
-                    <summary>Comming soon..</summary>
-                    <ul>
+                <td>
+                    <details>
+                        <summary>Comming soon..</summary>
+                        <ul>
 
-                    </ul>
-                </details></td>
+                        </ul>
+                    </details>
+                </td>
 
                 <td>
                     <button type="submit">Update</button>
@@ -80,7 +85,58 @@
             </form>
         </tr>
     </th:block>
+
     </tbody>
+</table>
+
+<br>
+<h2>User hinzufügen</h2>
+<table >
+    <tr name="errors" th:object="${superadminAddUserForm}">
+        <td th:if="${#fields.hasErrors('SAUFvorname')}" th:errors="*{SAUFvorname}"></td>
+        <td th:unless="${#fields.hasErrors('SAUFvorname')}"></td>
+
+        <td th:if="${#fields.hasErrors('SAUFnachname')}" th:errors="*{SAUFnachname}"></td>
+        <td th:unless="${#fields.hasErrors('SAUFnachname')}"></td>
+
+        <td th:if="${#fields.hasErrors('SAUFemail')}" th:errors="*{SAUFemail}"></td>
+        <td th:unless="${#fields.hasErrors('SAUFemail')}"></td>
+
+        <td th:if="${#fields.hasErrors('SAUFbenutzername')}" th:errors="*{SAUFbenutzername}"></td>
+        <td th:unless="${#fields.hasErrors('SAUFbenutzername')}"></td>
+
+        <td th:if="${#fields.hasErrors('SAUFpasswort')}" th:errors="*{SAUFpasswort}"></td>
+        <td th:unless="${#fields.hasErrors('SAUFpasswort')}"></td>
+    </tr>
+    <tr>
+        <form action="#" th:object="${superadminAddUserForm}" th:action="@{/superadmin/userVerwalten/add}" th:method="post">
+            <td><input type="text" th:field="${superadminAddUserForm.SAUFvorname}" placeholder="Vorname"/></td>
+            <td><input type="text" th:field="${superadminAddUserForm.SAUFnachname}" placeholder="Nachname"/></td>
+            <td><input type="text" th:field="${superadminAddUserForm.SAUFemail}" placeholder="Email"/></td>
+            <td><input type="text" th:field="${superadminAddUserForm.SAUFbenutzername}" placeholder="Benutzername"/></td>
+            <td><input type="text" th:field="${superadminAddUserForm.SAUFpasswort}" placeholder="Passwort"/></td>
+
+            <td>
+                <details open>
+                    <ul>
+                        <li th:each="role: ${roles}">
+                            <input type="checkbox"
+                                   th:id="ranks"
+                                   th:name="ranks"
+                                   th:value="${role.getRoleid()}"/>
+                            <label th:text="${role.getName()}"></label>
+                        </li>
+                    </ul>
+                </details>
+            </td>
+
+            <td></td>
+
+            <td>
+                <button type="submit">Add</button>
+            </td>
+        </form>
+    </tr>
 </table>
 
 </body>

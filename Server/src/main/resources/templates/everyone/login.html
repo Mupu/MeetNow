@@ -7,9 +7,10 @@
 <p><a href="/registration">Register</a></p>
 <p><a href="/home">Home</a></p>
 
-<div th:if="${param.error}"> Invalid username and password. </div>
-<div th:if="${param.logout}"> You have been logged out. </div>
-<div th:if="${param.accountDeleted}"> Your account has been deleted. </div>
+<div th:if="${param.error}"> Invalid username or password. </div>
+<div th:if="${param.logout}"> You have been successfully logged out. </div>
+<div th:if="${param.relog}"> You have been logged out. Please login again. </div>
+<div th:if="${param.accountDeleted}"> Your account has been deleted successfully. </div>
 <form th:action="@{/login}" method="post">
     <table>
     <tr>
@@ -24,6 +25,8 @@
         <td><input type="submit" value="Sign In"/></td>
     </tr>
     </table>
+    <p><a href="/forgotCredentials">Forgot username or password?</a></p>
+    <p><a href="/resendConfirmationEmail">Didn't receive the confirmation email?</a></p>
 </form>
 </body>
 </html>

@@ -35,7 +35,6 @@ import static org.jooq.impl.DSL.inline;
 @Secured("ROLE_USER")
 @RequestMapping("user")
 public class BesprechungController {
-    // todo add user email next to name if name exists twice or more
     // todo add notification if you gegenstand has been deleted by admin
 
     @Autowired

@@ -39,14 +39,20 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .authorizeRequests()
-                .antMatchers("/favicon.ico").permitAll()
                 .antMatchers("/", "/home").permitAll()
+
+                .antMatchers("/favicon.ico").permitAll()
+
                 .antMatchers("/registration").permitAll()
                 .antMatchers("/confirmation").permitAll()
                 .antMatchers("/resendConfirmationEmail").permitAll()
-                .antMatchers("/resetPassword").permitAll()
+
                 .antMatchers("/login").permitAll()
-                .antMatchers("/forgotCredentials/**").permitAll()
+
+                .antMatchers("/forgotCredentials/resetPassword").permitAll()
+                .antMatchers("/forgotCredentials/username").permitAll()
+                .antMatchers("/forgotCredentials/password").permitAll()
+                
                 .anyRequest().authenticated()
 
                 .and().formLogin()

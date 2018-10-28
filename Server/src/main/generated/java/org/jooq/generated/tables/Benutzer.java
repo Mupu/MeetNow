@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Benutzer extends TableImpl<BenutzerRecord> {
 
-    private static final long serialVersionUID = 969293697;
+    private static final long serialVersionUID = 556716825;
 
     /**
      * The reference instance of <code>meetnow.benutzer</code>
@@ -81,6 +81,11 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
      * The column <code>meetnow.benutzer.IsEnabled</code>.
      */
     public final TableField<BenutzerRecord, UByte> ISENABLED = createField("IsEnabled", org.jooq.impl.SQLDataType.TINYINTUNSIGNED.nullable(false), this, "");
+
+    /**
+     * The column <code>meetnow.benutzer.ResetPasswordToken</code>.
+     */
+    public final TableField<BenutzerRecord, String> RESETPASSWORDTOKEN = createField("ResetPasswordToken", org.jooq.impl.SQLDataType.CHAR(36).nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.benutzer</code> table reference

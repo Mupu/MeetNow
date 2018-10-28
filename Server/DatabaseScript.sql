@@ -27,7 +27,6 @@ CREATE TABLE IF NOT EXISTS Person (
 	Nachname CHAR(16) NOT NULL,
 	Email CHAR(32) NOT NULL,
 	ConfirmationToken CHAR(36) NOT NULL,
-	ResetPasswordToken CHAR(36) NOT NULL,
 	PRIMARY KEY (PersonId),
 	UNIQUE INDEX Email (Email)
 );
@@ -45,6 +44,7 @@ CREATE TABLE IF NOT EXISTS Benutzer (
 	Benutzername CHAR(16) NOT NULL,
 	Passwort VARCHAR(551) NOT NULL,
 	IsEnabled TINYINT(1) UNSIGNED NOT NULL,
+	ResetPasswordToken CHAR(36) NOT NULL,
 	PRIMARY KEY (BenutzerId),
 	UNIQUE INDEX PersonId (PersonId),
 	UNIQUE INDEX Benutzername (Benutzername),

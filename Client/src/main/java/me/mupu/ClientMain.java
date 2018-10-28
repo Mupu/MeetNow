@@ -10,7 +10,6 @@ public class ClientMain extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        System.out.println(System.getProperty("user.dir"));
         Parent root = FXMLLoader.load(getClass().getResource("/me/mupu/gui/Login.fxml"));
         primaryStage.setTitle("Hello World");
         primaryStage.setScene(new Scene(root));

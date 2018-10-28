@@ -44,7 +44,8 @@ public class AccountSettingsController {
     }
 
     @PutMapping()
-    public ModelAndView accountDataUpdate(@RequestParam String vorname,
+    public ModelAndView accountDataUpdate(@RequestParam String email,
+                                          @RequestParam String vorname,
                                           @RequestParam String nachname,
                                           @RequestParam String benutzername,
                                           @RequestParam String passwort) {
@@ -56,6 +57,12 @@ public class AccountSettingsController {
         CustomUser user = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         try {
+            if (!email.equals(""))
+                dslContext.update(PERSON)
+                        .set(PERSON.EMAIL, email)
+                        .where(PERSON.PERSONID.eq(user.getUserdata().getPersonid()))
+                        .execute();
+
             if (!vorname.equals(""))
                 dslContext.update(PERSON)
                         .set(PERSON.VORNAME, vorname)

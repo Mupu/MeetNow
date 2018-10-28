@@ -52,7 +52,6 @@ public class UserVerwaltenController {
                              SuperadminAddUserForm superadminAddUserForm,
                              HttpServletRequest request,
                              HttpServletResponse response) {
-        System.out.println(superadminAddUserForm.getSAUFnachname());
 
         if (!bindingResult.hasErrors()) {
             BenutzerRecord user = dslContext.selectFrom(BENUTZER).where(BENUTZER.BENUTZERID.eq(UInteger.valueOf(benutzerId))).fetchSingle();
@@ -152,7 +151,6 @@ public class UserVerwaltenController {
                             @Valid SuperadminAddUserForm superadminAddUserForm,
                             BindingResult bindingResult) {
 
-        System.out.println(userVerwaltenForm.getNachname());
         if (superadminAddUserForm.getSAUFpasswort() == null
                 || superadminAddUserForm.getSAUFpasswort().equals(""))
             bindingResult.rejectValue("SAUFpasswort", "SAUFpasswort", "Passwort darf nicht leer sein.");
@@ -169,7 +167,6 @@ public class UserVerwaltenController {
                             "")
                     .returning()
                     .fetchOne();
-            System.out.println(addedPerson);
 
             BenutzerRecord addedBenutzer = dslContext.insertInto(BENUTZER)
                     .columns(BENUTZER.PERSONID,
@@ -184,12 +181,10 @@ public class UserVerwaltenController {
                             UByte.valueOf(1))
                     .returning()
                     .fetchOne();
-            System.out.println(addedBenutzer);
 
             for (String s :
                     superadminAddUserForm.getSAUFranks()) {
                 dslContext.insertInto(USER_ROLE).values(addedBenutzer.getBenutzerid(), UInteger.valueOf(s)).execute();
-                System.out.println("added rank " + s);
             }
 
         }

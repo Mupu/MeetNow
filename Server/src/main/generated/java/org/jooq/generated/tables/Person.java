@@ -41,7 +41,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Person extends TableImpl<PersonRecord> {
 
-    private static final long serialVersionUID = -787214963;
+    private static final long serialVersionUID = -1603776639;
 
     /**
      * The reference instance of <code>meetnow.person</code>
@@ -80,11 +80,6 @@ public class Person extends TableImpl<PersonRecord> {
      * The column <code>meetnow.person.ConfirmationToken</code>.
      */
     public final TableField<PersonRecord, String> CONFIRMATIONTOKEN = createField("ConfirmationToken", org.jooq.impl.SQLDataType.CHAR(36).nullable(false), this, "");
-
-    /**
-     * The column <code>meetnow.person.ResetPasswordToken</code>.
-     */
-    public final TableField<PersonRecord, String> RESETPASSWORDTOKEN = createField("ResetPasswordToken", org.jooq.impl.SQLDataType.CHAR(36).nullable(false), this, "");
 
     /**
      * Create a <code>meetnow.person</code> table reference

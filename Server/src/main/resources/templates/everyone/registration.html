@@ -14,7 +14,7 @@
                 <table>
                     <tr>
                         <td>Vorname:</td>
-                        <td><input type="text" th:field="*{vorname}" /></td>
+                        <td><input type="text" th:field="*{vorname}" autofocus/></td>
                         <td th:if="${#fields.hasErrors('vorname')}" th:errors="*{vorname}"></td>
                     </tr>
                     <tr>

@@ -52,7 +52,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/forgotCredentials/resetPassword").permitAll()
                 .antMatchers("/forgotCredentials/username").permitAll()
                 .antMatchers("/forgotCredentials/password").permitAll()
-                
+
                 .anyRequest().authenticated()
 
                 .and().formLogin()

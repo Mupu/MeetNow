@@ -70,11 +70,13 @@ public class ConfirmationController {
                             .columns(BENUTZER.PERSONID,
                                     BENUTZER.BENUTZERNAME,
                                     BENUTZER.PASSWORT,
-                                    BENUTZER.ISENABLED)
+                                    BENUTZER.ISENABLED,
+                                    BENUTZER.RESETPASSWORDTOKEN)
                             .values(person.getPersonid(),
                                     confirmationForm.getUsername(),
                                     hashPasswordEncoder.encode(confirmationForm.getPassword()),
-                                    UByte.valueOf(1))
+                                    UByte.valueOf(1),
+                                    "")
                             .returning()
                             .fetchOne();
 

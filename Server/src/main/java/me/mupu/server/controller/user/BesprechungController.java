@@ -175,10 +175,10 @@ public class BesprechungController {
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
-        BesprechungRecord besprechung = isOwnerOfRoom(owner.getPersonid(), besprechungId);
+        BesprechungRecord besprechung = isAuthorizedForRoom(owner.getPersonid(), besprechungId);
 
         return createDefaultEditBesprechungView(
-                owner.getPersonid(),
+                besprechung.getBesitzerpid(),
                 besprechungForm,
                 registrationForm,
                 besprechung
@@ -195,7 +195,7 @@ public class BesprechungController {
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
-        BesprechungRecord besprechung = isOwnerOfRoom(owner.getPersonid(), besprechungId);
+        BesprechungRecord besprechung = isAuthorizedForRoom(owner.getPersonid(), besprechungId);
 
         // check if times are correct
         if (besprechungForm.getZeitraumStart() == null || besprechungForm.getZeitraumEnde() == null
@@ -227,29 +227,26 @@ public class BesprechungController {
             updateAusleiheDatabase(besprechung, besprechungForm);
         }
 
-
         return createDefaultEditBesprechungView(
-                owner.getPersonid(),
+                besprechung.getBesitzerpid(),
                 besprechungForm,
                 registrationForm,
                 besprechung);
     }
 
     @DeleteMapping("/deleteBesprechung/{besprechungId}")
-    public ModelAndView deleteBesprechung(@PathVariable int besprechungId) {
+    public ModelAndView deleteBesprechung(@PathVariable int besprechungId,
+                                          HttpServletRequest request) {
 
         // get current logged in user
         BenutzerRecord user = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
         // check if user owns that meeting
-        BesprechungRecord besprechung = dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(besprechungId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(user.getPersonid()))// ist besitzer ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
+        BesprechungRecord besprechung = isAuthorizedForRoom(user.getPersonid(), besprechungId);
 
         dslContext.deleteFrom(BESPRECHUNG).where(BESPRECHUNG.BESPRECHUNGID.eq(besprechung.getBesprechungid())).execute();
-        return new ModelAndView("redirect:/user/termine");
+
+        return new ModelAndView("redirect:" + request.getHeader("referer"));
     }
 
     // clean up registration
@@ -267,7 +264,7 @@ public class BesprechungController {
 
         ModelAndView mv;
         if (path.equals("editBesprechung")) {
-            BesprechungRecord besprechung = isOwnerOfRoom(user.getPersonid(), besprechungId);
+            BesprechungRecord besprechung = isAuthorizedForRoom(user.getPersonid(), besprechungId);
 
             mv = createDefaultEditBesprechungView(
                     user.getPersonid(),
@@ -502,12 +499,19 @@ public class BesprechungController {
         return invitedUsersStream.toArray(String[]::new);
     }
 
-    private BesprechungRecord isOwnerOfRoom(UInteger ownerPId, int roomId) {
-        return dslContext.selectFrom(BESPRECHUNG).
-                where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
-                .and(BESPRECHUNG.BESITZERPID.eq(ownerPId))// ist besitzer ?
-                .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
-                .fetchSingle();
+    private BesprechungRecord isAuthorizedForRoom(UInteger ownerPId, int roomId) {
+        CustomUser customUser = (CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (customUser.getAuthorities().stream().anyMatch(ga -> ga.getAuthority().equals("ROLE_SUPERADMIN")))
+            return dslContext.selectFrom(BESPRECHUNG).
+                    where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
+                    .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                    .fetchSingle();
+        else
+            return dslContext.selectFrom(BESPRECHUNG).
+                    where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
+                    .and(BESPRECHUNG.BESITZERPID.eq(ownerPId))// ist besitzer ?
+                    .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
+                    .fetchSingle();
     }
 
     /**

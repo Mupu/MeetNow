@@ -41,8 +41,8 @@ public class Indexes {
     public static final Index AUSLEIHE_AUSLEIHE_FKINDEX2 = Indexes0.AUSLEIHE_AUSLEIHE_FKINDEX2;
     public static final Index AUSLEIHE_PRIMARY = Indexes0.AUSLEIHE_PRIMARY;
     public static final Index AUSSTATTUNGSGEGENSTAND_PRIMARY = Indexes0.AUSSTATTUNGSGEGENSTAND_PRIMARY;
-    public static final Index BENUTZER_BENUTZERNAME = Indexes0.BENUTZER_BENUTZERNAME;
     public static final Index BENUTZER_BENUTZER_FKINDEX1 = Indexes0.BENUTZER_BENUTZER_FKINDEX1;
+    public static final Index BENUTZER_BENUTZERNAME = Indexes0.BENUTZER_BENUTZERNAME;
     public static final Index BENUTZER_PERSONID = Indexes0.BENUTZER_PERSONID;
     public static final Index BENUTZER_PRIMARY = Indexes0.BENUTZER_PRIMARY;
     public static final Index BESPRECHUNG_BESPRECHUNG_FKINDEX1 = Indexes0.BESPRECHUNG_BESPRECHUNG_FKINDEX1;
@@ -68,8 +68,8 @@ public class Indexes {
         public static Index AUSLEIHE_AUSLEIHE_FKINDEX2 = Internal.createIndex("ausleihe_FKIndex2", Ausleihe.AUSLEIHE, new OrderField[] { Ausleihe.AUSLEIHE.AUSSTATTUNGSGEGENSTANDID }, false);
         public static Index AUSLEIHE_PRIMARY = Internal.createIndex("PRIMARY", Ausleihe.AUSLEIHE, new OrderField[] { Ausleihe.AUSLEIHE.BESPRECHUNGID, Ausleihe.AUSLEIHE.AUSSTATTUNGSGEGENSTANDID }, true);
         public static Index AUSSTATTUNGSGEGENSTAND_PRIMARY = Internal.createIndex("PRIMARY", Ausstattungsgegenstand.AUSSTATTUNGSGEGENSTAND, new OrderField[] { Ausstattungsgegenstand.AUSSTATTUNGSGEGENSTAND.AUSSTATTUNGSGEGENSTANDID }, true);
-        public static Index BENUTZER_BENUTZERNAME = Internal.createIndex("Benutzername", Benutzer.BENUTZER, new OrderField[] { Benutzer.BENUTZER.BENUTZERNAME }, true);
         public static Index BENUTZER_BENUTZER_FKINDEX1 = Internal.createIndex("Benutzer_FKIndex1", Benutzer.BENUTZER, new OrderField[] { Benutzer.BENUTZER.PERSONID }, false);
+        public static Index BENUTZER_BENUTZERNAME = Internal.createIndex("Benutzername", Benutzer.BENUTZER, new OrderField[] { Benutzer.BENUTZER.BENUTZERNAME }, true);
         public static Index BENUTZER_PERSONID = Internal.createIndex("PersonId", Benutzer.BENUTZER, new OrderField[] { Benutzer.BENUTZER.PERSONID }, true);
         public static Index BENUTZER_PRIMARY = Internal.createIndex("PRIMARY", Benutzer.BENUTZER, new OrderField[] { Benutzer.BENUTZER.BENUTZERID }, true);
         public static Index BESPRECHUNG_BESPRECHUNG_FKINDEX1 = Internal.createIndex("Besprechung_FKIndex1", Besprechung.BESPRECHUNG, new OrderField[] { Besprechung.BESPRECHUNG.BESITZERPID }, false);

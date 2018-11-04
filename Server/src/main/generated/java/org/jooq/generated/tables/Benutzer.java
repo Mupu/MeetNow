@@ -42,7 +42,7 @@ import org.jooq.types.UInteger;
 @SuppressWarnings({ "all", "unchecked", "rawtypes" })
 public class Benutzer extends TableImpl<BenutzerRecord> {
 
-    private static final long serialVersionUID = 556716825;
+    private static final long serialVersionUID = -1633639987;
 
     /**
      * The reference instance of <code>meetnow.benutzer</code>
@@ -133,7 +133,7 @@ public class Benutzer extends TableImpl<BenutzerRecord> {
      */
     @Override
     public List<Index> getIndexes() {
-        return Arrays.<Index>asList(Indexes.BENUTZER_BENUTZERNAME, Indexes.BENUTZER_BENUTZER_FKINDEX1, Indexes.BENUTZER_PERSONID, Indexes.BENUTZER_PRIMARY);
+        return Arrays.<Index>asList(Indexes.BENUTZER_BENUTZER_FKINDEX1, Indexes.BENUTZER_BENUTZERNAME, Indexes.BENUTZER_PERSONID, Indexes.BENUTZER_PRIMARY);
     }
 
     /**

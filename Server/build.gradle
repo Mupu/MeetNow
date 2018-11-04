@@ -1,12 +1,12 @@
 buildscript {
 	ext {
-		springBootVersion = '2.0.5.RELEASE'
+//		springBootVersion = '2.0.5.RELEASE'
+		springBootVersion = '2.1.0.RELEASE'
 
-//        dbDriver = "com.mysql.cj.jdbc.Driver"
-        dbDriver = "com.mysql.jdbc.Driver"
-        dbUrl = "jdbc:mysql://192.168.2.119:3306/meetnow"
-        dbUser = "mupu"
-        dbPassword = "mupu"
+        dbDriver = "com.mysql.cj.jdbc.Driver"
+        dbUrl = "jdbc:mysql://localhost:3306/meetnow"
+        dbUser = "root"
+        dbPassword = "root"
 
 	}
     repositories {
@@ -34,6 +34,7 @@ group = 'me.mupu'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
+
 repositories {
 	mavenCentral()
 }
@@ -56,7 +57,7 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test')
 }
 
-// overwrite springboots version
+// overwrite springboots version - bug in current spring version
 ext['jooq.version'] = '3.11.5'
 
 jooq {

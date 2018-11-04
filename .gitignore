@@ -28,6 +28,8 @@ out/
 .gradle
 .gradletasknamecache
 gradle-app.setting
+gradlew
+gradlew.bat
 !gradle-wrapper.jar
 build/
 !gradle/wrapper/gradle-wrapper.jar

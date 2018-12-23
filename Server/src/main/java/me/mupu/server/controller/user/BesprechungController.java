@@ -185,6 +185,7 @@ public class BesprechungController {
         );
     }
 
+    // todo termin von anderem user edittiert -> andere user verscwand von teilnehmerliste
     @PutMapping("/editBesprechung/{besprechungId}")
     public ModelAndView editBesprechung(@PathVariable int besprechungId,
                                         @Valid BesprechungForm besprechungForm,

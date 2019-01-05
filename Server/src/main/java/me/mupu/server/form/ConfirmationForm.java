@@ -23,13 +23,4 @@ public class ConfirmationForm {
     @Size(min = 4, max = 50)
     private String repeatPassword;
 
-    @AssertTrue     // tells programm to run this method
-    public boolean isTest() {   // sets the actual value
-        repeatedPasswordIsCorrect = password.equals(repeatPassword);
-        return repeatedPasswordIsCorrect;
-    }
-
-    @AssertTrue(message = "Passwörter stimmen nicht überein")     // this is the attribute that is tested in the html file
-    private boolean repeatedPasswordIsCorrect;  // <-- field name
-
 }

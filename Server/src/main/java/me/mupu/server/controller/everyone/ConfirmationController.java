@@ -63,6 +63,10 @@ public class ConfirmationController {
         PersonRecord person = userDetailsService.findUserByConfimationToken(token);
         if (person != null) {
 
+            // check if passwords are the same
+            if (!confirmationForm.getPassword().equals(confirmationForm.getRepeatPassword()))
+                bindingResult.rejectValue("repeatPassword", "repeatPassword", "Passwords do not match");
+
             if (!bindingResult.hasErrors()) {
                 // add user to database
                 try {

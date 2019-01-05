@@ -17,7 +17,6 @@ import javax.validation.Valid;
  */
 @Controller
 public class RegistrationController {
-
     @Autowired
     private RegistrationService registrationService;
 
@@ -38,10 +37,11 @@ public class RegistrationController {
 
         if (!bindingResult.hasErrors()) {
             if (registrationService.registerUser(registrationForm, request) != null) {
-                mv.addObject("success", "Please confirm your email: ");
+                mv.addObject("success", "Please confirm your Email: ");
                 mv.addObject("provider", registrationForm.getEmail().split("@")[1]);
             } else
-                mv.addObject("error", "Error. Please try again later.");
+//                mv.addObject("error", "Error. Email already taken.");
+            bindingResult.rejectValue("email", "email", "Email already taken.");
         }
 
         return mv;

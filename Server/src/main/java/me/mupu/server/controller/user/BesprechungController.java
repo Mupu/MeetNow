@@ -5,6 +5,7 @@ import me.mupu.server.form.RegistrationForm;
 import me.mupu.server.model.CustomUser;
 import me.mupu.server.service.RegistrationService;
 import org.jooq.*;
+import org.jooq.generated.tables.Besprechung;
 import org.jooq.generated.tables.records.*;
 import org.jooq.impl.DSL;
 import org.jooq.types.UInteger;
@@ -22,6 +23,7 @@ import javax.validation.Valid;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.function.Supplier;
@@ -35,7 +37,7 @@ import static org.jooq.impl.DSL.inline;
 @Secured("ROLE_USER")
 @RequestMapping("user")
 public class BesprechungController {
-    // todo add notification if you gegenstand has been deleted by admin
+    // todo add notification if gegenstand has been deleted by admin
 
     @Autowired
     private DSLContext dslContext;
@@ -78,7 +80,7 @@ public class BesprechungController {
 
         // check if response is still valid
         if (!bindingResult.hasErrors())
-            if (!isBesprechungsFormResponseValid(besprechungForm))
+            if (!isBesprechungsFormResponseValid(besprechungForm, bindingResult))
                 bindingResult.reject("isBesprechungsFormResponseValid", "Inputs were invalid. Please try again.");
 
 
@@ -136,23 +138,25 @@ public class BesprechungController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/neueBesprechung");
 
-
         // default start end date
         Calendar c = Calendar.getInstance();
         c.add(Calendar.DAY_OF_MONTH, 1);
         c.set(Calendar.MINUTE, 0);
 
-        besprechungForm.setZeitraumStart(c.getTime());
+        if (besprechungForm.getZeitraumStart() == null) {
+            besprechungForm.setZeitraumStart(c.getTime());
 
-        c.add(Calendar.HOUR, 1);
-        besprechungForm.setZeitraumEnde(c.getTime());
-
+            c.add(Calendar.HOUR, 1);
+            besprechungForm.setZeitraumEnde(c.getTime());
+        }
 
         Result<PersonRecord> userList = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
         // remove yourself from list
         userList.removeIf(personRecord -> user.getPersonid().intValue() == personRecord.getPersonid().intValue());
 
+
         mv.addObject("registrationForm", registrationForm);
+        mv.addObject("besprechungForm", besprechungForm);
         mv.addObject("userList", userList);
         mv.addObject("userId", user.getPersonid().intValue());
         mv.addObject("gegenstandList", getAvailableItems(besprechungForm.getZeitraumStart(), besprechungForm.getZeitraumEnde()));
@@ -174,7 +178,7 @@ public class BesprechungController {
         // get current logged in user
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        // check if user owns that meeting
+        // check if user owns that meeting or is superadmin
         BesprechungRecord besprechung = isAuthorizedForRoom(owner.getPersonid(), besprechungId);
 
         return createDefaultEditBesprechungView(
@@ -185,7 +189,6 @@ public class BesprechungController {
         );
     }
 
-    // todo termin von anderem user edittiert -> andere user verscwand von teilnehmerliste
     @PutMapping("/editBesprechung/{besprechungId}")
     public ModelAndView editBesprechung(@PathVariable int besprechungId,
                                         @Valid BesprechungForm besprechungForm,
@@ -195,7 +198,7 @@ public class BesprechungController {
         // get current logged in user
         BenutzerRecord owner = ((CustomUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal()).getUserdata();
 
-        // check if user owns that meeting
+        // check if user owns that meeting or is superadmin
         BesprechungRecord besprechung = isAuthorizedForRoom(owner.getPersonid(), besprechungId);
 
         // check if times are correct
@@ -205,9 +208,9 @@ public class BesprechungController {
 
         // check if response is still valid
         if (!bindingResult.hasErrors())
-            if (!isBesprechungsFormResponseValid(besprechung, besprechungForm)) {
+            if (!isBesprechungsFormResponseValid(besprechung, besprechungForm, bindingResult)) {
                 bindingResult.reject("isBesprechungsFormResponseValid", "Inputs were invalid. Please try again.");
-                besprechungForm = new BesprechungForm(); // reset page
+                //besprechungForm = new BesprechungForm(); // reset page
             }
         if (!bindingResult.hasErrors()) {
             // todo make this into own method called change date
@@ -222,7 +225,7 @@ public class BesprechungController {
                     .execute();
 
             // users
-            updateTeilnahmeDatabase(owner, besprechung, besprechungForm);
+            updateTeilnahmeDatabase(besprechung, besprechungForm);
 
             // items
             updateAusleiheDatabase(besprechung, besprechungForm);
@@ -301,8 +304,8 @@ public class BesprechungController {
     /**
      * Adds/removes the users to/from the database based on the selection in besprechungForm
      */
-    private void updateTeilnahmeDatabase(BenutzerRecord owner, BesprechungRecord besprechung, BesprechungForm besprechungForm) {
-        // this is all previously invited users but will be filtered to removedUsers
+    private void updateTeilnahmeDatabase(BesprechungRecord besprechung, BesprechungForm besprechungForm) {
+        // these are all previously invited users but will be filtered to removedUsers
         Result<TeilnahmeRecord> removedUsers = dslContext.selectFrom(TEILNAHME).where(TEILNAHME.BESPRECHUNGID.eq(besprechung.getBesprechungid())).fetch();
 
         Supplier<Stream<TeilnahmeRecord>> stillInvitedUsers = () ->
@@ -321,7 +324,8 @@ public class BesprechungController {
         );
 
         // remove owner from list
-        removedUsers.removeIf(u -> u.getPersonid().intValue() == owner.getPersonid().intValue());
+        //removedUsers.removeIf(u -> u.getPersonid().intValue() == owner.getPersonid().intValue());
+        removedUsers.removeIf(u -> u.getPersonid().intValue() == besprechung.getBesitzerpid().intValue());
         // remove users that are still invited
         removedUsers.removeIf(u ->
                 stillInvitedUsers.get().anyMatch(x ->
@@ -391,11 +395,14 @@ public class BesprechungController {
                         || besprechungChosenItemsMap.get(nai) == 0
         );
 
-        // remove items that are on both lists
-        removedItems.removeIf(ri ->                     // ?????????????????????
-                removedItems.stream().noneMatch(nai ->  // ?????????????????????
-                        nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue())
-                        || besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
+        // remove items all items that have been selected (count != 0).
+        // all items on the list will be deleted later on.
+        removedItems.removeIf(ri ->
+                removedItems.stream().anyMatch(nai ->
+                        nai.getAusstattungsgegenstandid().intValue() == ri.getAusstattungsgegenstandid().intValue()
+                                && besprechungChosenItemsMap.containsKey(ri.getAusstattungsgegenstandid().intValue())
+                                && besprechungChosenItemsMap.get(ri.getAusstattungsgegenstandid().intValue()) != 0
+                )
         );
 
 
@@ -427,7 +434,6 @@ public class BesprechungController {
                                                           BesprechungForm besprechungForm,
                                                           RegistrationForm registrationForm,
                                                           BesprechungRecord besprechung
-
     ) {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("user/editBesprechung");
@@ -435,11 +441,14 @@ public class BesprechungController {
 
         // set default values
         // only set these default values if they havent been set yet (on get request)
-        if (besprechungForm.getRaumId() == -1) {
+        if (besprechungForm.getRaumId() == -1 && besprechungForm.getThema() == null) {
             besprechungForm.setThema(besprechung.getThema());
             besprechungForm.setZeitraumStart(besprechung.getZeitraumstart());
             besprechungForm.setZeitraumEnde(besprechung.getZeitraumende());
             besprechungForm.setRaumId(besprechung.getRaumid().intValue());
+
+            // select items
+            besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung));
         }
 
         Result<PersonRecord> allExistingUsers = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
@@ -453,8 +462,6 @@ public class BesprechungController {
                 besprechungForm.getZeitraumStart(),
                 besprechungForm.getZeitraumEnde()
         );
-        // select items
-        besprechungForm.setChosenItemsCount(getSelectedItemsForThymeleaf(besprechung));
 
 
         Result<RaumRecord> availableRooms = getAvailableRooms(
@@ -505,12 +512,14 @@ public class BesprechungController {
         if (customUser.getAuthorities().stream().anyMatch(ga -> ga.getAuthority().equals("ROLE_SUPERADMIN")))
             return dslContext.selectFrom(BESPRECHUNG).
                     where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
+                    .and(BESPRECHUNG.ZEITRAUMSTART.greaterOrEqual(DSL.now()))
                     .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
                     .fetchSingle();
         else
             return dslContext.selectFrom(BESPRECHUNG).
                     where(BESPRECHUNG.BESPRECHUNGID.eq(UInteger.valueOf(roomId))) // gleicher raum?
                     .and(BESPRECHUNG.BESITZERPID.eq(ownerPId))// ist besitzer ?
+                    .and(BESPRECHUNG.ZEITRAUMSTART.greaterOrEqual(DSL.now()))
                     .and(BESPRECHUNG.ZEITRAUMENDE.greaterOrEqual(DSL.now())) // is still active or in future
                     .fetchSingle();
     }
@@ -519,33 +528,31 @@ public class BesprechungController {
      * Checks if the results are valid.
      * Example: it checks if the room the user selected is still free.
      */
-    private boolean isBesprechungsFormResponseValid(BesprechungForm besprechungForm) {
-        return isBesprechungsFormResponseValid(null, besprechungForm);
+    private boolean isBesprechungsFormResponseValid(BesprechungForm besprechungForm, BindingResult bindingResult) {
+        return isBesprechungsFormResponseValid(null, besprechungForm, bindingResult);
     }
 
     /**
      * Checks if the results are valid.
      * Example: it checks if the room the user selected is still free.
      */
-    private boolean isBesprechungsFormResponseValid(BesprechungRecord besprechung, BesprechungForm besprechungForm) {
-        UInteger id = null;
-        Date start;
-        Date end;
+    private boolean isBesprechungsFormResponseValid(BesprechungRecord besprechung, BesprechungForm besprechungForm, BindingResult bindingResult) {
+        UInteger id;
+        Date start = besprechungForm.getZeitraumStart();
+        Date end = besprechungForm.getZeitraumEnde();
 
-        if (besprechung != null) {
+        if (besprechung != null)
             id = besprechung.getBesprechungid();
-            start = besprechung.getZeitraumstart();
-            end = besprechung.getZeitraumende();
-        } else {
-            start = besprechungForm.getZeitraumStart();
-            end = besprechungForm.getZeitraumEnde();
-        }
+        else
+            id = null;
 
 
         // room valid ?
         if (getAvailableRooms(id, start, end).stream().noneMatch(r ->
-                r.getRaumid().intValue() == (besprechungForm.getRaumId())))
+                r.getRaumid().intValue() == (besprechungForm.getRaumId()))) {
+            bindingResult.rejectValue("raumId", "raumId", "Bitte wähle einen Raum aus");
             return false;
+        }
 
         Result<PersonRecord> allExistingUsers = dslContext.selectFrom(PERSON).orderBy(PERSON.VORNAME, PERSON.NACHNAME).fetch();
         // users valid ?
@@ -567,13 +574,30 @@ public class BesprechungController {
         }
 
         // items valid ?
-        return getAvailableItems(id, start, end).stream().allMatch(ai ->
-                besprechungChosenItemsMapKeySet.stream().anyMatch(k ->
-                        k == ((UInteger) ai.get(0)).intValue()
+        if (!(besprechungChosenItemsMapKeySet.stream().allMatch(k ->
+                getAvailableItems(id, start, end).stream().anyMatch(ai ->
+                        k == ((UInteger) ai.get(0)).intValue() // ai.get(0) = id of item // is item available ?
+                                && besprechungChosenItemsMap.get(k) <= ((Integer) ai.get(2)) // max item count = ai.get(2) // is item count available
                 )
-                        && besprechungChosenItemsMap.get(((UInteger) ai.get(0)).intValue()) >= 0
-                        && besprechungChosenItemsMap.get(((UInteger) ai.get(0)).intValue()) <= (Integer) ai.get(2)
-        );
+        ))
+        ) {
+            bindingResult.rejectValue("chosenItemsCount", "chosenItemsCount", "Gegenstand nicht verfügbar!");
+
+            Set<Integer> temp = new HashSet<>(besprechungChosenItemsMapKeySet);
+            temp.forEach(ik -> {
+                if (getAvailableItems(id, start, end).stream().noneMatch(ai -> ai.get(0) == ik)) // item not available
+                    besprechungChosenItemsMapKeySet.remove(ik);
+                else if (getAvailableItems(id, start, end).stream().noneMatch(ai -> // item count not available
+                        ai.get(0) == ik
+                                && besprechungChosenItemsMap.get(ik) <= ((Integer) ai.get(2))))
+                    besprechungChosenItemsMap.put(ik, 0);   // reset setted item count to 0
+
+            });
+
+            return false;
+        }
+
+        return true;
     }
 
     private Result<Record3<UInteger, String, Integer>> getAvailableItems(Date startDate, Date endDate) {

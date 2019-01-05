@@ -33,6 +33,8 @@ import static org.jooq.generated.Tables.*;
 @RequestMapping("/superadmin/userVerwalten")
 public class UserVerwaltenController {
 
+    //todo fix add user
+
     @Autowired
     private DSLContext dslContext;
 
@@ -170,15 +172,17 @@ public class UserVerwaltenController {
 
             BenutzerRecord addedBenutzer = dslContext.insertInto(BENUTZER)
                     .columns(BENUTZER.PERSONID,
-                            BENUTZER.BENUTZERID,
+//                            BENUTZER.BENUTZERID,
                             BENUTZER.BENUTZERNAME,
                             BENUTZER.PASSWORT,
-                            BENUTZER.ISENABLED)
+                            BENUTZER.ISENABLED,
+                            BENUTZER.RESETPASSWORDTOKEN)
                     .values(addedPerson.getPersonid(),
-                            addedPerson.getPersonid(),
+//                            addedPerson.getPersonid(),
                             superadminAddUserForm.getSAUFbenutzername(),
                             hashPasswordEncoder.encode(superadminAddUserForm.getSAUFpasswort()),
-                            UByte.valueOf(1))
+                            UByte.valueOf(1),
+                            "")
                     .returning()
                     .fetchOne();
 

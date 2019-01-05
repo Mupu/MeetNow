@@ -17,6 +17,7 @@ public class ServerApplication {
     public static void main(String[] args) {
         /**
          * DISABLE JOOQ BANNER  -Dorg.jooq.no-logo=true
+         * DISABLE ILLIGAL ACCESS WARNING --illegal-access=warn
          */
         System.getProperties().setProperty("org.jooq.no-logo", "true");
 
@@ -49,11 +50,6 @@ public class ServerApplication {
         connector.setRedirectPort(443);
         return connector;
     }
-
-
-    /**
-     * TESTING HERE
-     */
 
 }
 

@@ -181,6 +181,10 @@ public class ForgotCredentialsController {
         ModelAndView mv = new ModelAndView();
         mv.setViewName("everyone/resetPassword");
 
+        // check if passwords are the same
+        if (!resetPasswordForm.getPassword().equals(resetPasswordForm.getRepeatPassword()))
+            bindingResult.rejectValue("repeatPassword", "repeatPassword", "Passwords do not match");
+
         if (!bindingResult.hasErrors()) {
             // check if token exists
             BenutzerRecord benutzer = dslContext.selectFrom(BENUTZER).where(BENUTZER.RESETPASSWORDTOKEN.eq(token)).fetchOne();

@@ -131,7 +131,7 @@
                 </details>
             </td>
             <div>
-                <td>
+                <td th:if="${#dates.createNow().before(item.get('zeitraumStart'))}">
                     <form action="#" th:action="'/user/editBesprechung/' + ${item.get('BesprechungId')}" th:method="get">
                         <button th:type="submit" th:text="Edit"></button>
                     </form>

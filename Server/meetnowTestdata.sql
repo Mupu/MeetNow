@@ -34,9 +34,9 @@ insert into benutzer (personId, benutzername, `passwort`, isEnabled, resetPasswo
 insert into benutzer (personId, benutzername, `passwort`, isEnabled, resetPasswordToken) values (9, 'Sara', '12345:896726789951771d43da915591194aba:d3fc9ad17e37ffdb12309521e4680edf577531149d6cea630c88b20f5887115e6e74aa727bf0ff4d89dfebad3dfbf1b7b61562a7846e3e52a0df8ceaed6b75c03e461eb69eef5c3072bafba00e74085dfbf0601ce221ae1772d6f325ca028ff4f4e8d0a4a8882fd95cb86c6a386d972fdcb816c419a8dd4554d6451ef2e15f4f1bd9b992c0093b803ee932525c6f4d43c5a7eb43a9ce80295375875e0c2d4b7b60ce86650b0874531d0521481a45bf9190a9de19d4f13c625d7601a9e3a534bd23e48db1d22b51441f9b386c15a48fdff0db615a69ed1e3af92ebdeee8513eea72ac994c56e8e953ec77993a8ee74b06dfa55f6d7924de32a97db762dbaecd21', 1, '');
 insert into benutzer (personId, benutzername, `passwort`, isEnabled, resetPasswordToken) values (10, 'RoxannePeters', '12345:a02960e6be668dc9398a059b9e7a9ee1:ead2ae0ff67446f00bf3d28a99f80515c8848500fc3e23a80e4ced0b3e2713710e0b325081abb941d094b0b77424bd3628fea15a7d234bb61cbdce197bfcf5090c2dce2722373d9ef0b5d9d25593c6ca4884dead50672092f3dbc19ad3e2bd06312b847ad16559f52d8d32a20203db13437f9621697f708ee06da922d83598b0a76801101dfd1c9cee317097c447c0dd327784767b67a0570a1932a72528a12c46bff236a4dd67aef77232cd410f7b9b5d08de691009c53f217ba5a4b8069a5ee8b3b51ccd6b862e78f32f86de302897fa9dbb2962b385617c766e586691565a2893ca3c7c32d7a8211faaf2e581397b76b44e01d165571ff265f717beae929e', 0, '');
 
-insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (1, 1, 'test1', '2018-10-29 13:10:00.000', '2018-10-29 14:10:00.000');
-insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (2, 9, 'test2', '2018-10-29 13:10:00.000', '2018-10-29 14:10:00.000');
-insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (1, 6, 'test3', '2018-10-29 15:10:00.000', '2018-10-29 16:10:00.000');
+insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (1, 1, 'test1', '2020-10-29 13:10:00.000', '2020-10-29 14:10:00.000');
+insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (2, 9, 'test2', '2020-10-29 13:10:00.000', '2020-10-29 14:10:00.000');
+insert into besprechung (raumId, BesitzerPId, thema, zeitraumStart, zeitraumEnde) values (1, 6, 'test3', '2020-10-29 11:10:00.000', '2020-10-29 12:10:00.000');
 
 insert into ausleihe values (1, 1, 2);
 insert into ausleihe values (1, 3, 1);
